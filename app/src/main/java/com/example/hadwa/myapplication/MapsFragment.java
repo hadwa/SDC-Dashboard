@@ -122,15 +122,15 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
         mapFragment.getMapAsync(this);
 
 
-        recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false));
+        //recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
+        //recyclerView.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false));
 
         Markers = new ArrayList<>();
-        RecyclerListAdapter adapter = new RecyclerListAdapter(getActivity(),Markers);
-        recyclerView.setAdapter(adapter);
-        ItemTouchHelper.Callback callBack = new ItemDragHelper(adapter);
-        ItemTouchHelper dragHelper = new ItemTouchHelper(callBack);
-        dragHelper.attachToRecyclerView(recyclerView);
+        //RecyclerListAdapter adapter = new RecyclerListAdapter(getActivity(),Markers);
+        //recyclerView.setAdapter(adapter);
+        //ItemTouchHelper.Callback callBack = new ItemDragHelper(adapter);
+        //ItemTouchHelper dragHelper = new ItemTouchHelper(callBack);
+        //dragHelper.attachToRecyclerView(recyclerView);
 
 
         return view;
@@ -270,8 +270,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
                 GetRoutToMarker(marker.getPosition());
                 BottomSheetText = getActivity().findViewById(R.id.WhichStop);
                 BottomSheetText.setText(choosenMarker1);
-                UpperSheetText=getActivity().findViewById(R.id.Upper_sheetText);
-                UpperSheetText.setText("Proceed or click ADD STOP for other destinations");
+  //              UpperSheetText=getActivity().findViewById(R.id.Upper_sheetText);
+  //              UpperSheetText.setText("Proceed or click ADD STOP for other destinations");
 
                 //showBottomSheetView();
 
