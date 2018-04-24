@@ -115,22 +115,22 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
 
         };
 
-
+//        BottomSheetText.setText("Pick a drop-off location");
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
 
-        //recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
-        //recyclerView.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false));
+        recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.HORIZONTAL,false));
 
         Markers = new ArrayList<>();
-        //RecyclerListAdapter adapter = new RecyclerListAdapter(getActivity(),Markers);
-        //recyclerView.setAdapter(adapter);
-        //ItemTouchHelper.Callback callBack = new ItemDragHelper(adapter);
-        //ItemTouchHelper dragHelper = new ItemTouchHelper(callBack);
-        //dragHelper.attachToRecyclerView(recyclerView);
+        RecyclerListAdapter adapter = new RecyclerListAdapter(getActivity(),Markers);
+        recyclerView.setAdapter(adapter);
+        ItemTouchHelper.Callback callBack = new ItemDragHelper(adapter);
+        ItemTouchHelper dragHelper = new ItemTouchHelper(callBack);
+        dragHelper.attachToRecyclerView(recyclerView);
 
 
         return view;
@@ -243,7 +243,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
         mMap.addMarker(new MarkerOptions().position(Admission).title("Admission Building"));
         mMap.addMarker(new MarkerOptions().position(B).title("B Building"));
         mMap.addMarker(new MarkerOptions().position(C).title("C Building"));
-        mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+        //mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+
+        BottomSheetText = getActivity().findViewById(R.id.WhichStop);
+        BottomSheetText.setText("Pick a drop-off location");
+        BottomSheetText.setAlpha((float) 0.54);
 
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
         mMap.setMinZoomPreference(16);
@@ -268,31 +272,31 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
                 }
 
                 GetRoutToMarker(marker.getPosition());
-                BottomSheetText = getActivity().findViewById(R.id.WhichStop);
                 BottomSheetText.setText(choosenMarker1);
+                BottomSheetText.setAlpha((float) 0.87);
   //              UpperSheetText=getActivity().findViewById(R.id.Upper_sheetText);
   //              UpperSheetText.setText("Proceed or click ADD STOP for other destinations");
 
                 //showBottomSheetView();
 
-                Button addStop = (Button) getActivity().findViewById(R.id.AddStop);
-                addStop.setOnClickListener(new View.OnClickListener() {
-                    public void onClick(View v) {
-                       // mBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-                        UpperSheetText.setText("Choose other stop");
-                        stops=2;
-                        check=8;
-
-
-                    }
-                });
-                addStop.setOnDragListener(new View.OnDragListener() {
-                    @Override
-                    public boolean onDrag(View v, DragEvent event) {
-
-                        return false;
-                    }
-                });
+//                Button addStop = (Button) getActivity().findViewById(R.id.AddStop);
+//                addStop.setOnClickListener(new View.OnClickListener() {
+//                    public void onClick(View v) {
+//                       // mBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+//                        UpperSheetText.setText("Choose other stop");
+//                        stops=2;
+//                        check=8;
+//
+//
+//                    }
+//                });
+//                addStop.setOnDragListener(new View.OnDragListener() {
+//                    @Override
+//                    public boolean onDrag(View v, DragEvent event) {
+//
+//                        return false;
+//                    }
+//                });
                 stops=1;
                 ClickM=marker.getPosition();
 

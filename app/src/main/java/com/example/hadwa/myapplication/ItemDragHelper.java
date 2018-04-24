@@ -20,8 +20,8 @@ class ItemDragHelper extends ItemTouchHelper.Callback {
     }
 
     public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-        int dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN;
-        return makeMovementFlags(dragFlags, ItemTouchHelper.RIGHT); // Flag Left is not used
+        int dragFlags = ItemTouchHelper.RIGHT | ItemTouchHelper.LEFT;
+        return makeMovementFlags(dragFlags, ItemTouchHelper.UP); // Flag Left is not used
     }
 
     public boolean isLongPressDragEnabled() {

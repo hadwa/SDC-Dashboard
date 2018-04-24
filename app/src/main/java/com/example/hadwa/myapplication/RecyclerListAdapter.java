@@ -8,10 +8,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-
-import com.example.hadwa.myapplication.MyAdapter.ViewHolder;
-import com.google.android.gms.maps.model.Marker;
-
 import java.util.Collections;
 import java.util.List;
 
