@@ -32,7 +32,13 @@ class ItemDragHelper extends ItemTouchHelper.Callback {
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
         if (direction==ItemTouchHelper.RIGHT) {
             Collections.swap(itemHelper.Markers,viewHolder.getAdapterPosition(), viewHolder.getAdapterPosition()-1);
-            Log.d("brownies", String.valueOf(itemHelper.Markers.size()));
+
+        }
+        if(direction== ItemTouchHelper.UP){
+            itemHelper.Markers.remove(itemHelper.Markers.get(viewHolder.getAdapterPosition()));
+            itemHelper.notifyItemRemoved(viewHolder.getAdapterPosition());
+            //itemHelper.Markers.remove(viewHolder.itemView.getId());
+//            Log.d("brownies", String.valueOf(viewHolder.itemView.));
         }
 
     }
@@ -59,7 +65,6 @@ class ItemDragHelper extends ItemTouchHelper.Callback {
         super.clearView(recyclerView, viewHolder);
 
         viewHolder.itemView.setAlpha(ALPHA_FULL);
-
         if (viewHolder instanceof ListItemTouchHelper) {
             // Tell the view holder it's time to restore the idle state
             ListItemTouchHelper itemViewHolder = (ListItemTouchHelper) viewHolder;
