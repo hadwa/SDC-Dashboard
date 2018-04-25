@@ -51,6 +51,7 @@ import java.util.List;
             public RecyclerViewHolder(View itemView) {
                 super(itemView);
                 CardText = itemView.findViewById(R.id.CardText);
+
             }
 
         }
