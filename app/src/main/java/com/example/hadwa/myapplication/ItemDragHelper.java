@@ -32,7 +32,7 @@ class ItemDragHelper extends ItemTouchHelper.Callback {
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
         if (direction==ItemTouchHelper.RIGHT) {
             Collections.swap(itemHelper.Markers,viewHolder.getAdapterPosition(), viewHolder.getAdapterPosition()-1);
-            Log.v("brownies", String.valueOf(itemHelper.Markers.size()));
+            Log.d("brownies", String.valueOf(itemHelper.Markers.size()));
         }
 
     }

@@ -260,7 +260,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
             public boolean onMarkerClick(final Marker marker) {
 
                 Markers.add(marker.getTitle());
-
+                //Log.d("brownies", String.valueOf(Markers.get(Markers.size()-1)));
                 if(stops==1){
                     choosenMarker1=marker.getTitle();
                     StartLocation=mLastLocation;
