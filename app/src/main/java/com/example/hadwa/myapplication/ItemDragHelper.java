@@ -35,6 +35,7 @@ class ItemDragHelper extends ItemTouchHelper.Callback {
         if(direction== ItemTouchHelper.UP){
             itemHelper.Markers.remove(itemHelper.Markers.get(viewHolder.getAdapterPosition()));
             itemHelper.notifyItemRemoved(viewHolder.getAdapterPosition());
+            MapsFragment.DestinationCount--;
             Log.d("brownies", String.valueOf(itemHelper.Markers.size()));
 
         }
@@ -63,9 +64,9 @@ class ItemDragHelper extends ItemTouchHelper.Callback {
         super.clearView(recyclerView, viewHolder);
 
         viewHolder.itemView.setAlpha(ALPHA_FULL);
-        Log.d("osama","hena wala eh");
-        Log.d("brakessss", itemHelper.Markers.get(0));
-        Log.d("brakesss", itemHelper.Markers.get(1));
+  //      Log.d("osama","hena wala eh");
+//        Log.d("brakessss", itemHelper.Markers.get(0));
+ //       Log.d("brakesss", itemHelper.Markers.get(1));
         if (viewHolder instanceof ListItemTouchHelper) {
             // Tell the view holder it's time to restore the idle state
             ListItemTouchHelper itemViewHolder = (ListItemTouchHelper) viewHolder;

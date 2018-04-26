@@ -88,7 +88,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
     //List<String> Markers = new ArrayList<String>(uniqueStrings);
 
     RecyclerView recyclerView;
-    private int DestinationCount=0;
+
+    public static int DestinationCount = 0;
 
     public MapsFragment() {
         // Required empty public constructor
@@ -381,5 +382,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
             mBottomSheetDialog.dismiss();
         }*/
     }
+
 
 }
