@@ -8,17 +8,23 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.model.Marker;
+
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 
     public class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerListAdapter.RecyclerViewHolder> {
 
         private final Context mCtx;
+       // LinkedHashSet<String> Markers = new LinkedHashSet<String>();
+       // List<String> uniqueStrings = new ArrayList<String>(Markers);
         List<String> Markers;
 
-        public RecyclerListAdapter(Context mCtx, List<String> Markers) {
+        public RecyclerListAdapter(Context mCtx,  List<String>  Markers) {
             this.mCtx = mCtx;
-            this.Markers = Markers;
+            this.Markers =  Markers;
         }
 
         @Override

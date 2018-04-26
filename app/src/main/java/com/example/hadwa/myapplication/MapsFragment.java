@@ -48,6 +48,7 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 
@@ -62,13 +63,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
     private LocationCallback mLocationCallback;
     boolean mRequestingLocationUpdates;
     LatLng mLastLocation;
-    LatLng StartLocation;
     private LatLng Dest1 = new LatLng(29.988428, 31.4389311);
-    LatLng ClickM;
-    String choosenMarker1;
-    LatLng savedLocation;
-    int stops=1;
-    int check;
+
+
 
 
     private final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
@@ -86,7 +83,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
 
 
     List<String> Markers;
+
+   // LinkedHashSet<String> uniqueStrings = new LinkedHashSet<String>();
+    //List<String> Markers = new ArrayList<String>(uniqueStrings);
+
     RecyclerView recyclerView;
+    private int DestinationCount=0;
+
     public MapsFragment() {
         // Required empty public constructor
     }
@@ -259,53 +262,24 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
             @Override
             public boolean onMarkerClick(final Marker marker) {
 
-                Markers.add(marker.getTitle());
-                //Log.d("brownies", String.valueOf(Markers.get(Markers.size()-1)));
-                if(stops==1){
-                    choosenMarker1=marker.getTitle();
-                    StartLocation=mLastLocation;
-
-                }if(stops==2) {
-
-                    choosenMarker1+=" "+marker.getTitle();
-                    StartLocation=ClickM;
+                if(DestinationCount<4) {
+                    Markers.add(marker.getTitle());
+                    Log.d("brownies", String.valueOf(Markers.size()));
+                   // GetRoutToMarker(marker.getPosition());
+                    BottomSheetText.setText(marker.getTitle());
+                    BottomSheetText.setAlpha((float) 0.87);
+                    DestinationCount++;
+                }else
+                {
+                    Toast.makeText(getContext(), "Maximum Destinations Reached", Toast.LENGTH_SHORT).show();
                 }
 
-                GetRoutToMarker(marker.getPosition());
-                BottomSheetText.setText(choosenMarker1);
-                BottomSheetText.setAlpha((float) 0.87);
-  //              UpperSheetText=getActivity().findViewById(R.id.Upper_sheetText);
-  //              UpperSheetText.setText("Proceed or click ADD STOP for other destinations");
 
-                //showBottomSheetView();
-
-//                Button addStop = (Button) getActivity().findViewById(R.id.AddStop);
-//                addStop.setOnClickListener(new View.OnClickListener() {
-//                    public void onClick(View v) {
-//                       // mBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-//                        UpperSheetText.setText("Choose other stop");
-//                        stops=2;
-//                        check=8;
-//
-//
-//                    }
-//                });
-//                addStop.setOnDragListener(new View.OnDragListener() {
-//                    @Override
-//                    public boolean onDrag(View v, DragEvent event) {
-//
-//                        return false;
-//                    }
-//                });
-                stops=1;
-                ClickM=marker.getPosition();
-
-
-
-                //Log.d("Hadwaaa", marker.getTitle());
                 return true;
             }
         });
+
+
         Button Start = (Button) getActivity().findViewById(R.id.start);
         Start.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -329,11 +303,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
 
 
     private void GetRoutToMarker(LatLng clickedMarker) {
-        ClickM = clickedMarker;
+       //ClickM = clickedMarker;
         Routing routing = new Routing.Builder()
                 .travelMode(Routing.TravelMode.DRIVING)
                 // .waypoints(clickedMarker,new LatLng(mLastKnownLocation.getLatitude(),mLastKnownLocation.getLongitude()))
-                .waypoints(StartLocation, clickedMarker)
+                .waypoints(mLastLocation, clickedMarker)
                 .withListener(this)
                 .build();
         routing.execute();
@@ -361,12 +335,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
 
     @Override
     public void onRoutingSuccess(ArrayList<Route> route, int j) {
-        if(check!=8) {
+
             if (polylines.size() > 0) {
                 for (Polyline poly : polylines) {
                     poly.remove();
                 }
-            }
+
         }
 
         polylines = new ArrayList<>();
