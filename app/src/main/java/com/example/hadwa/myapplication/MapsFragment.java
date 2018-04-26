@@ -25,6 +25,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,6 +50,7 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -64,8 +67,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
     boolean mRequestingLocationUpdates;
     LatLng mLastLocation;
     private LatLng Dest1 = new LatLng(29.988428, 31.4389311);
-
-
+    private HashMap<String, LatLng> pinLocations;
 
 
     private final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
@@ -130,6 +132,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.HORIZONTAL,false));
 
         Markers = new ArrayList<>();
+        pinLocations = new HashMap<String, LatLng>();
+
         RecyclerListAdapter adapter = new RecyclerListAdapter(getActivity(),Markers);
         recyclerView.setAdapter(adapter);
         ItemTouchHelper.Callback callBack = new ItemDragHelper(adapter);
@@ -242,12 +246,18 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
         LatLng Admission = new LatLng(29.988428, 31.4389311);
         final LatLng B = new LatLng(29.9859256, 31.4386074);
         final LatLng C = new LatLng(29.9859929, 31.4392198);
-        final Marker marker1 = mMap.addMarker(new MarkerOptions().position(Admission).title("Admission Building"));
+        //final Marker marker1 = mMap.addMarker(new MarkerOptions().position(Admission).title("Admission Building"));
 
-        mMap.addMarker(new MarkerOptions().position(Admission).title("Admission Building"));
-        mMap.addMarker(new MarkerOptions().position(B).title("B Building"));
-        mMap.addMarker(new MarkerOptions().position(C).title("C Building"));
-        //mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+        pinLocations.put("Admission Building", new LatLng(29.988428, 31.4389311));
+        pinLocations.put("B Building", new LatLng(29.9859256, 31.4386074));
+        pinLocations.put("C Building", new LatLng(29.9859929, 31.4392198));
+//        mMap.addMarker(new MarkerOptions().position(Admission).title("Admission Building"));
+//        mMap.addMarker(new MarkerOptions().position(B).title("B Building"));
+//        mMap.addMarker(new MarkerOptions().position(C).title("C Building"));
+
+        for(String key : pinLocations.keySet()){
+            mMap.addMarker(new MarkerOptions().position(pinLocations.get(key)).title(key));
+        }
 
         BottomSheetText = getActivity().findViewById(R.id.WhichStop);
         BottomSheetText.setText("Pick a drop-off location");
@@ -262,18 +272,20 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public boolean onMarkerClick(final Marker marker) {
-
-                if(DestinationCount<4) {
-                    Markers.add(marker.getTitle());
-                    Log.d("brownies", String.valueOf(Markers.size()));
-                   // GetRoutToMarker(marker.getPosition());
-                    BottomSheetText.setText(marker.getTitle());
-                    BottomSheetText.setAlpha((float) 0.87);
-                    DestinationCount++;
-                }else
-                {
-                    Toast.makeText(getContext(), "Maximum Destinations Reached", Toast.LENGTH_SHORT).show();
-                }
+        if(!Markers.contains(marker.getTitle())) {
+            if (DestinationCount < 4) {
+                Markers.add(marker.getTitle());
+                Log.d("brownies", String.valueOf(Markers.size()));
+                // GetRoutToMarker(marker.getPosition());
+                BottomSheetText.setText(marker.getTitle());
+                BottomSheetText.setAlpha((float) 0.87);
+                DestinationCount++;
+            } else {
+                Toast.makeText(getContext(), "Maximum destinations reached", Toast.LENGTH_SHORT).show();
+            }
+        }else{
+            Toast.makeText(getContext(), "Duplicate destinations", Toast.LENGTH_SHORT).show();
+        }
 
 
                 return true;
@@ -284,9 +296,65 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
         Button Start = (Button) getActivity().findViewById(R.id.start);
         Start.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                if (Markers.size() > 0) {
+                    GetRoutToMarker(pinLocations.get(Markers.get(0)));
+                    LinearLayout bottomSheet = (LinearLayout) getActivity().findViewById(R.id.BottomSheet_layout);
+                    LinearLayout bottomSheet2 = (LinearLayout) getActivity().findViewById(R.id.BottomSheet_layout2);
+
+                    TextView dest1 = (TextView) getActivity().findViewById(R.id.dest1);
+                    TextView dest2 = (TextView) getActivity().findViewById(R.id.dest2);
+                    TextView dest3 = (TextView) getActivity().findViewById(R.id.dest3);
+                    TextView dest4 = (TextView) getActivity().findViewById(R.id.dest4);
+                    ImageView destIcon1 = (ImageView) getActivity().findViewById(R.id.dest_icon1);
+                    ImageView destIcon2 = (ImageView) getActivity().findViewById(R.id.dest_icon2);
+                    ImageView destIcon3 = (ImageView) getActivity().findViewById(R.id.dest_icon3);
+
+                    if (Markers.size() == 1) {
+                        dest1.setText(Markers.get(0));
+                        dest1.setVisibility(View.VISIBLE);
+                    }
+                    if (Markers.size() == 2) {
+                        dest1.setText(Markers.get(0));
+                        dest2.setText(Markers.get(1));
+                        dest1.setVisibility(View.VISIBLE);
+                        dest2.setVisibility(View.VISIBLE);
+                        destIcon1.setVisibility(View.VISIBLE);
+                    }
+                    if (Markers.size() == 3) {
+                        dest1.setText(Markers.get(0));
+                        dest2.setText(Markers.get(1));
+                        dest3.setText(Markers.get(2));
+                        dest1.setVisibility(View.VISIBLE);
+                        dest2.setVisibility(View.VISIBLE);
+                        dest3.setVisibility(View.VISIBLE);
+                        destIcon1.setVisibility(View.VISIBLE);
+                        destIcon2.setVisibility(View.VISIBLE);
+                    }
+                    if (Markers.size() == 4) {
+                        dest1.setText(Markers.get(0));
+                        dest2.setText(Markers.get(1));
+                        dest3.setText(Markers.get(2));
+                        dest4.setText(Markers.get(3));
+                        dest1.setVisibility(View.VISIBLE);
+                        dest2.setVisibility(View.VISIBLE);
+                        dest3.setVisibility(View.VISIBLE);
+                        dest4.setVisibility(View.VISIBLE);
+                        destIcon1.setVisibility(View.VISIBLE);
+                        destIcon2.setVisibility(View.VISIBLE);
+                        destIcon3.setVisibility(View.VISIBLE);
+                    }
 
 
+                    bottomSheet.setVisibility(View.GONE);
+                    bottomSheet2.setVisibility(View.VISIBLE);
+
+
+                }else{
+                    Toast.makeText(getContext(), "Please choose a destination", Toast.LENGTH_SHORT).show();
+                }
             }
+
+
         });
 
 
