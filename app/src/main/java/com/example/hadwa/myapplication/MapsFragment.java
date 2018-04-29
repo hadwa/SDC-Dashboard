@@ -8,10 +8,13 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.location.Location;
+import android.media.Image;
+import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
@@ -55,9 +58,12 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import static com.example.hadwa.myapplication.R.drawable.ic_marker_black;
 
 
 /**
@@ -107,7 +113,18 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         //polylines = new ArrayList<>();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
         //NewText = (TextView)findViewById(R.id.WhichStop);
-
+        if(!isInternetAvailable()){
+            new AlertDialog.Builder(getContext())
+                    .setTitle("Device is offline")
+                    .setMessage("Please connect to the internet")
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            requestPermissions(new String[]{Manifest.permission.INTERNET}, 1);
+                        }
+                    })
+                    .create().show();
+        }
         mLocationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
@@ -254,13 +271,15 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         pinLocations.put("Admission Building", new LatLng(29.988428, 31.4389311));
         pinLocations.put("B Building", new LatLng(29.9859256, 31.4386074));
         pinLocations.put("C Building", new LatLng(29.9859929, 31.4392198));
+        pinLocations.put("D Building", new LatLng(29.9870481, 31.4410851));
+        pinLocations.put("Parking", new LatLng(29.985347, 31.440862));
 //        mMap.addMarker(new MarkerOptions().position(Admission).title("Admission Building"));
 //        mMap.addMarker(new MarkerOptions().position(B).title("B Building"));
 //        mMap.addMarker(new MarkerOptions().position(C).title("C Building"));
 
         for(String key : pinLocations.keySet()){
-            markerText=getActivity().findViewById(R.id.Markertxt);
-            //markerText.setText(key);
+            markerText=markerIcon.findViewById(R.id.Markertxt);
+            markerText.setText(key);
             mMap.addMarker(new MarkerOptions().position(pinLocations.get(key)).title(key).icon(BitmapDescriptorFactory.fromBitmap(createDrawableFromView(getContext(), markerIcon))));
 
         }
@@ -283,6 +302,16 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
                 Markers.add(marker.getTitle());
                 Log.d("brownies", String.valueOf(Markers.size()));
                 //GetRoutToMarker(marker.getPosition());
+               final ImageView markerView = (ImageView) markerIcon.findViewById(R.id.icon1);
+//                //markerView.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.ic_marker_blue));
+//                markerView.setImageResource(R.drawable.ic_marker_black);
+                markerView.setImageDrawable(getResources().getDrawable(R.drawable.ic_marker_black));
+//                //markerView.setBackground(getResources());
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                    markerView.setImageDrawable(getResources().getDrawable(R.drawable.ic_marker_black, getContext().getTheme()));
+//                } else {
+//                    markerView.setImageDrawable(getResources().getDrawable(R.drawable.ic_marker_black));
+//                }
                 BottomSheetText.setText(marker.getTitle());
                 BottomSheetText.setAlpha((float) 0.87);
                 DestinationCount++;
@@ -471,6 +500,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
     @Override
     public void onClick(View v) {
 
+
+
+
     }
 
 
@@ -492,4 +524,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
     public void onDirectionFailure(Throwable t) {
 
     }
+
+    public boolean isInternetAvailable() {
+        ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        return cm.getActiveNetworkInfo() != null;
+    }
+
 }

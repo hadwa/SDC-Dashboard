@@ -8,7 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.util.Log;
 
-public class MapsActivity extends AppCompatActivity {
+public class MapsActivity extends AppCompatActivity{
 
 
 
