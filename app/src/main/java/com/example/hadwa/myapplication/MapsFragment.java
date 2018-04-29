@@ -3,24 +3,29 @@ package com.example.hadwa.myapplication;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
-import android.support.design.widget.BottomSheetBehavior;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,10 +35,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.directions.route.Route;
-import com.directions.route.RouteException;
-import com.directions.route.Routing;
-import com.directions.route.RoutingListener;
+import com.akexorcist.googledirection.DirectionCallback;
+import com.akexorcist.googledirection.GoogleDirection;
+import com.akexorcist.googledirection.constant.TransportMode;
+import com.akexorcist.googledirection.model.Direction;
+import com.akexorcist.googledirection.model.Route;
+import com.akexorcist.googledirection.util.DirectionConverter;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -42,23 +49,21 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MapsFragment extends Fragment implements OnMapReadyCallback, RoutingListener, View.OnClickListener{
+public class MapsFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener,DirectionCallback{
 
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationClient;
@@ -68,6 +73,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
     LatLng mLastLocation;
     private LatLng Dest1 = new LatLng(29.988428, 31.4389311);
     private HashMap<String, LatLng> pinLocations;
+    TextView markerText;
+    View markerIcon;
 
 
     private final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
@@ -77,20 +84,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
 
 
 
-    private BottomSheetBehavior mBehavior;
-    private View mBottomSheet;
     private TextView BottomSheetText;
     private View view;
-    private TextView UpperSheetText;
-
-
     List<String> Markers;
-
-   // LinkedHashSet<String> uniqueStrings = new LinkedHashSet<String>();
-    //List<String> Markers = new ArrayList<String>(uniqueStrings);
-
     RecyclerView recyclerView;
-
     public static int DestinationCount = 0;
 
     public MapsFragment() {
@@ -104,8 +101,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
         // Inflate the layout for this fragment
 
         view = inflater.inflate(R.layout.maps_fragment, container, false);
+         markerIcon = ((LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_marker_layout, null);
 
-        polylines = new ArrayList<>();
+
+        //polylines = new ArrayList<>();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
         //NewText = (TextView)findViewById(R.id.WhichStop);
 
@@ -238,6 +237,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
         mFusedLocationClient.removeLocationUpdates(mLocationCallback);
     }
 
+
+
+
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -256,7 +259,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
 //        mMap.addMarker(new MarkerOptions().position(C).title("C Building"));
 
         for(String key : pinLocations.keySet()){
-            mMap.addMarker(new MarkerOptions().position(pinLocations.get(key)).title(key));
+            markerText=getActivity().findViewById(R.id.Markertxt);
+            //markerText.setText(key);
+            mMap.addMarker(new MarkerOptions().position(pinLocations.get(key)).title(key).icon(BitmapDescriptorFactory.fromBitmap(createDrawableFromView(getContext(), markerIcon))));
+
         }
 
         BottomSheetText = getActivity().findViewById(R.id.WhichStop);
@@ -276,7 +282,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
             if (DestinationCount < 4) {
                 Markers.add(marker.getTitle());
                 Log.d("brownies", String.valueOf(Markers.size()));
-                // GetRoutToMarker(marker.getPosition());
+                //GetRoutToMarker(marker.getPosition());
                 BottomSheetText.setText(marker.getTitle());
                 BottomSheetText.setAlpha((float) 0.87);
                 DestinationCount++;
@@ -296,6 +302,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
         Button Start = (Button) getActivity().findViewById(R.id.start);
         Start.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(Marker marker) {
+                        return true;
+                    }
+                });
                 if (Markers.size() > 0) {
                     GetRoutToMarker(pinLocations.get(Markers.get(0)));
                     LinearLayout bottomSheet = (LinearLayout) getActivity().findViewById(R.id.BottomSheet_layout);
@@ -369,24 +381,43 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
 
     }
 
+    public static Bitmap createDrawableFromView(Context context, View view) {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        ((Activity) context).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        view.measure(displayMetrics.widthPixels, displayMetrics.heightPixels);
+        view.layout(0, 0, displayMetrics.widthPixels, displayMetrics.heightPixels);
+        view.buildDrawingCache();
+        Bitmap bitmap = Bitmap.createBitmap(view.getMeasuredWidth(), view.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
 
+        Canvas canvas = new Canvas(bitmap);
+        view.draw(canvas);
+
+        return bitmap;
+    }
 
     private void GetRoutToMarker(LatLng clickedMarker) {
        //ClickM = clickedMarker;
-        Routing routing = new Routing.Builder()
+        GoogleDirection.withServerKey("AIzaSyCZ5TH2mfl26LqDq6kkVbo85gLPZ9fmaik")
+                .from(mLastLocation)
+                .to(clickedMarker)
+                .transportMode(TransportMode.DRIVING)
+                .execute(this);
+
+      /*  Routing routing = new Routing.Builder()
                 .travelMode(Routing.TravelMode.DRIVING)
                 // .waypoints(clickedMarker,new LatLng(mLastKnownLocation.getLatitude(),mLastKnownLocation.getLongitude()))
                 .waypoints(mLastLocation, clickedMarker)
                 .withListener(this)
                 .build();
         routing.execute();
-
+*/
 
     }
 
-    private List<Polyline> polylines;
-    private static final int[] COLORS = new int[]{R.color.primary_dark_material_light};
-
+    //private List<Polyline> polylines;
+    //private static final int[] COLORS = new int[]{R.color.primary_dark_material_light};
+/*
     @Override
     public void onRoutingFailure(RouteException e) {
 
@@ -400,10 +431,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
     @Override
     public void onRoutingStart() {
 
-    }
+    }*/
 
-    @Override
-    public void onRoutingSuccess(ArrayList<Route> route, int j) {
+
+    /*public void onRoutingSuccess(ArrayList<Route> route, int j) {
 
             if (polylines.size() > 0) {
                 for (Polyline poly : polylines) {
@@ -436,20 +467,29 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Routin
 
     }
 
-
+*/
     @Override
     public void onClick(View v) {
 
     }
 
-    private void showBottomSheetView() {
-        mBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        mBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
 
-       /* if (mBottomSheetDialog != null) {
-            mBottomSheetDialog.dismiss();
-        }*/
+    @Override
+    public void onDirectionSuccess(Direction direction, String rawBody) {
+        Log.d("Polylines", direction.getStatus());
+
+        if(direction.isOK()) {
+            Log.d("Polylines", "eh b2aa");
+            Log.d("Polylines", String.valueOf(direction.getRouteList().get(0)));
+            Route route = direction.getRouteList().get(0);
+            ArrayList<LatLng> directionPositionList = route.getLegList().get(0).getDirectionPoint();
+            mMap.addPolyline(DirectionConverter.createPolyline(getContext(), directionPositionList, 4, Color.BLACK));
+            //setCameraWithCoordinationBounds(route);
+        }
     }
 
+    @Override
+    public void onDirectionFailure(Throwable t) {
 
+    }
 }
