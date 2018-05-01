@@ -7,10 +7,13 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
 
 public class MapsActivity extends AppCompatActivity{
 
 
+    private int backpress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,7 +27,18 @@ public class MapsActivity extends AppCompatActivity{
     }
 
 
-
+    public void onBackPressed(){
+//        Toast.makeText(getApplicationContext(), " Press Back again to Exit ", Toast.LENGTH_SHORT).show();
+        if(MapsFragment.appState == "initialState"){
+            Toast.makeText(getApplicationContext(), " Initial state ", Toast.LENGTH_SHORT).show();
+            System.exit(0);
+        }
+        if(MapsFragment.appState == "routeReady"){
+            Toast.makeText(getApplicationContext(), " Route ready", Toast.LENGTH_SHORT).show();
+            MapsFragment.bottomSheet.setVisibility(View.VISIBLE);
+            MapsFragment.bottomSheet2.setVisibility(View.GONE);
+        }
+    }
 
 
 }

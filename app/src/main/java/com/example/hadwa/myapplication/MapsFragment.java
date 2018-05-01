@@ -92,7 +92,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
     static ArrayList<Marker> chosenMarkerArrayList;
     static TextView markerText;
     static View markerIcon;
-
+    static String appState;
 
     private final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
     public static final int REQUEST_CHECK_SETTINGS = 10;
@@ -107,6 +107,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
     RecyclerView recyclerView;
     public static int DestinationCount = 0;
     View cardLayout;
+    private int backpress;
+    static LinearLayout bottomSheet;
+    static LinearLayout bottomSheet2;
+
     public MapsFragment() {
         // Required empty public constructor
     }
@@ -120,7 +124,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         view = inflater.inflate(R.layout.maps_fragment, container, false);
          markerIcon = ((LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_marker_layout, null);
 //         markerIcon = ((LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_marker_layout, null);
-
+        appState = "initialState";
             CheckInternet();
 
         //polylines = new ArrayList<>();
@@ -345,20 +349,22 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         Start.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 CheckInternet();
-
+                appState = "routeReady";
                 if (isInternetAvailable()) {
                     CheckGPS();
                     if(isGpsAvailable(getContext())){
                     if (Markers.size() > 0) {
-                        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-                            @Override
-                            public boolean onMarkerClick(Marker marker) {
-                                return true;
-                            }
-                        });
+                        if(appState.equals("routeReady")) {
+                            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                                @Override
+                                public boolean onMarkerClick(Marker marker) {
+                                    return true;
+                                }
+                            });
+                        }
                         GetRoutToMarker(pinLocations.get(Markers.get(0)));
-                        LinearLayout bottomSheet = (LinearLayout) getActivity().findViewById(R.id.BottomSheet_layout);
-                        LinearLayout bottomSheet2 = (LinearLayout) getActivity().findViewById(R.id.BottomSheet_layout2);
+                         bottomSheet = (LinearLayout) getActivity().findViewById(R.id.BottomSheet_layout);
+                         bottomSheet2 = (LinearLayout) getActivity().findViewById(R.id.BottomSheet_layout2);
 
                         TextView dest1 = (TextView) getActivity().findViewById(R.id.dest1);
                         TextView dest2 = (TextView) getActivity().findViewById(R.id.dest2);
@@ -585,5 +591,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         LocationManager locationManager =(LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         return locationManager.isProviderEnabled(locationManager.GPS_PROVIDER);
     }
+
 
 }
