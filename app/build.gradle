@@ -37,4 +37,5 @@ dependencies {
     implementation 'com.android.support:recyclerview-v7:26.1.0'
     implementation'com.akexorcist:googledirectionlibrary:1.1.1'
     implementation 'com.tapadoo.android:alerter:2.0.5'
+
 }

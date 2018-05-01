@@ -19,6 +19,7 @@ import android.media.Image;
 import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -172,7 +173,15 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
             startLocationUpdates();
         }
         CheckInternet();
-        CheckGPS();
+//        final Handler handler = new Handler();
+//        handler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                CheckGPS();
+//                // Do something after 5s = 5000ms
+//                //buttons[inew][jnew].setBackgroundColor(Color.BLACK);
+//            }
+//        }, 5000);
 
     }
 
@@ -332,13 +341,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
                 if (isInternetAvailable()) {
                     CheckGPS();
                     if(isGpsAvailable(getContext())){
-                    mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-                        @Override
-                        public boolean onMarkerClick(Marker marker) {
-                            return true;
-                        }
-                    });
                     if (Markers.size() > 0) {
+                        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                            @Override
+                            public boolean onMarkerClick(Marker marker) {
+                                return true;
+                            }
+                        });
                         GetRoutToMarker(pinLocations.get(Markers.get(0)));
                         LinearLayout bottomSheet = (LinearLayout) getActivity().findViewById(R.id.BottomSheet_layout);
                         LinearLayout bottomSheet2 = (LinearLayout) getActivity().findViewById(R.id.BottomSheet_layout2);
