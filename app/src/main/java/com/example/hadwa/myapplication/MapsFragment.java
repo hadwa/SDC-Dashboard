@@ -7,17 +7,20 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.location.Location;
+import android.location.LocationManager;
 import android.media.Image;
 import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.Snackbar;
@@ -57,6 +60,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.tapadoo.alerter.Alerter;
+import com.tapadoo.alerter.OnShowAlertListener;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -108,23 +113,14 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
 
         view = inflater.inflate(R.layout.maps_fragment, container, false);
          markerIcon = ((LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_marker_layout, null);
+//         markerIcon = ((LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_marker_layout, null);
 
+            CheckInternet();
 
         //polylines = new ArrayList<>();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
         //NewText = (TextView)findViewById(R.id.WhichStop);
-        if(!isInternetAvailable()){
-            new AlertDialog.Builder(getContext())
-                    .setTitle("Device is offline")
-                    .setMessage("Please connect to the internet")
-                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            requestPermissions(new String[]{Manifest.permission.INTERNET}, 1);
-                        }
-                    })
-                    .create().show();
-        }
+
         mLocationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
@@ -175,6 +171,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         if (mRequestingLocationUpdates) {
             startLocationUpdates();
         }
+        CheckInternet();
+        CheckGPS();
+
     }
 
     public void onSaveInstanceState(Bundle outState) {
@@ -262,11 +261,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // Add a marker in Sydney and move the camera
+
         LatLng Admission = new LatLng(29.988428, 31.4389311);
         final LatLng B = new LatLng(29.9859256, 31.4386074);
         final LatLng C = new LatLng(29.9859929, 31.4392198);
-        //final Marker marker1 = mMap.addMarker(new MarkerOptions().position(Admission).title("Admission Building"));
+
+
 
         pinLocations.put("Admission Building", new LatLng(29.988428, 31.4389311));
         pinLocations.put("B Building", new LatLng(29.9859256, 31.4386074));
@@ -299,19 +299,15 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
             public boolean onMarkerClick(final Marker marker) {
         if(!Markers.contains(marker.getTitle())) {
             if (DestinationCount < 4) {
+
                 Markers.add(marker.getTitle());
                 Log.d("brownies", String.valueOf(Markers.size()));
                 //GetRoutToMarker(marker.getPosition());
-               final ImageView markerView = (ImageView) markerIcon.findViewById(R.id.icon1);
-//                //markerView.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.ic_marker_blue));
-//                markerView.setImageResource(R.drawable.ic_marker_black);
-                markerView.setImageDrawable(getResources().getDrawable(R.drawable.ic_marker_black));
-//                //markerView.setBackground(getResources());
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//                    markerView.setImageDrawable(getResources().getDrawable(R.drawable.ic_marker_black, getContext().getTheme()));
-//                } else {
-//                    markerView.setImageDrawable(getResources().getDrawable(R.drawable.ic_marker_black));
-//                }
+
+                ImageView markerView = (ImageView) markerIcon.findViewById(R.id.icon1);
+                markerView.setImageResource(R.drawable.ic_marker_blue);
+                marker.setIcon(BitmapDescriptorFactory.fromBitmap(createDrawableFromView(getContext(), markerIcon)));
+
                 BottomSheetText.setText(marker.getTitle());
                 BottomSheetText.setAlpha((float) 0.87);
                 DestinationCount++;
@@ -331,72 +327,78 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         Button Start = (Button) getActivity().findViewById(R.id.start);
         Start.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-                    @Override
-                    public boolean onMarkerClick(Marker marker) {
-                        return true;
+                CheckInternet();
+
+                if (isInternetAvailable()) {
+                    CheckGPS();
+                    if(isGpsAvailable(getContext())){
+                    mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                        @Override
+                        public boolean onMarkerClick(Marker marker) {
+                            return true;
+                        }
+                    });
+                    if (Markers.size() > 0) {
+                        GetRoutToMarker(pinLocations.get(Markers.get(0)));
+                        LinearLayout bottomSheet = (LinearLayout) getActivity().findViewById(R.id.BottomSheet_layout);
+                        LinearLayout bottomSheet2 = (LinearLayout) getActivity().findViewById(R.id.BottomSheet_layout2);
+
+                        TextView dest1 = (TextView) getActivity().findViewById(R.id.dest1);
+                        TextView dest2 = (TextView) getActivity().findViewById(R.id.dest2);
+                        TextView dest3 = (TextView) getActivity().findViewById(R.id.dest3);
+                        TextView dest4 = (TextView) getActivity().findViewById(R.id.dest4);
+
+                        ImageView destIcon1 = (ImageView) getActivity().findViewById(R.id.dest_icon1);
+                        ImageView destIcon2 = (ImageView) getActivity().findViewById(R.id.dest_icon2);
+                        ImageView destIcon3 = (ImageView) getActivity().findViewById(R.id.dest_icon3);
+
+                        if (Markers.size() == 1) {
+                            dest1.setText(Markers.get(0));
+                            dest1.setVisibility(View.VISIBLE);
+                        }
+                        if (Markers.size() == 2) {
+                            dest1.setText(Markers.get(0));
+                            dest2.setText(Markers.get(1));
+                            dest1.setVisibility(View.VISIBLE);
+                            dest2.setVisibility(View.VISIBLE);
+                            destIcon1.setVisibility(View.VISIBLE);
+                        }
+                        if (Markers.size() == 3) {
+                            dest1.setText(Markers.get(0));
+                            dest2.setText(Markers.get(1));
+                            dest3.setText(Markers.get(2));
+                            dest1.setVisibility(View.VISIBLE);
+                            dest2.setVisibility(View.VISIBLE);
+                            dest3.setVisibility(View.VISIBLE);
+                            destIcon1.setVisibility(View.VISIBLE);
+                            destIcon2.setVisibility(View.VISIBLE);
+                        }
+                        if (Markers.size() == 4) {
+                            dest1.setText(Markers.get(0));
+                            dest2.setText(Markers.get(1));
+                            dest3.setText(Markers.get(2));
+                            dest4.setText(Markers.get(3));
+                            dest1.setVisibility(View.VISIBLE);
+                            dest2.setVisibility(View.VISIBLE);
+                            dest3.setVisibility(View.VISIBLE);
+                            dest4.setVisibility(View.VISIBLE);
+                            destIcon1.setVisibility(View.VISIBLE);
+                            destIcon2.setVisibility(View.VISIBLE);
+                            destIcon3.setVisibility(View.VISIBLE);
+                        }
+
+
+                        bottomSheet.setVisibility(View.GONE);
+                        bottomSheet2.setVisibility(View.VISIBLE);
+
+
+                    } else {
+                        Toast.makeText(getContext(), "Please choose a destination", Toast.LENGTH_SHORT).show();
                     }
-                });
-                if (Markers.size() > 0) {
-                    GetRoutToMarker(pinLocations.get(Markers.get(0)));
-                    LinearLayout bottomSheet = (LinearLayout) getActivity().findViewById(R.id.BottomSheet_layout);
-                    LinearLayout bottomSheet2 = (LinearLayout) getActivity().findViewById(R.id.BottomSheet_layout2);
-
-                    TextView dest1 = (TextView) getActivity().findViewById(R.id.dest1);
-                    TextView dest2 = (TextView) getActivity().findViewById(R.id.dest2);
-                    TextView dest3 = (TextView) getActivity().findViewById(R.id.dest3);
-                    TextView dest4 = (TextView) getActivity().findViewById(R.id.dest4);
-                    ImageView destIcon1 = (ImageView) getActivity().findViewById(R.id.dest_icon1);
-                    ImageView destIcon2 = (ImageView) getActivity().findViewById(R.id.dest_icon2);
-                    ImageView destIcon3 = (ImageView) getActivity().findViewById(R.id.dest_icon3);
-
-                    if (Markers.size() == 1) {
-                        dest1.setText(Markers.get(0));
-                        dest1.setVisibility(View.VISIBLE);
-                    }
-                    if (Markers.size() == 2) {
-                        dest1.setText(Markers.get(0));
-                        dest2.setText(Markers.get(1));
-                        dest1.setVisibility(View.VISIBLE);
-                        dest2.setVisibility(View.VISIBLE);
-                        destIcon1.setVisibility(View.VISIBLE);
-                    }
-                    if (Markers.size() == 3) {
-                        dest1.setText(Markers.get(0));
-                        dest2.setText(Markers.get(1));
-                        dest3.setText(Markers.get(2));
-                        dest1.setVisibility(View.VISIBLE);
-                        dest2.setVisibility(View.VISIBLE);
-                        dest3.setVisibility(View.VISIBLE);
-                        destIcon1.setVisibility(View.VISIBLE);
-                        destIcon2.setVisibility(View.VISIBLE);
-                    }
-                    if (Markers.size() == 4) {
-                        dest1.setText(Markers.get(0));
-                        dest2.setText(Markers.get(1));
-                        dest3.setText(Markers.get(2));
-                        dest4.setText(Markers.get(3));
-                        dest1.setVisibility(View.VISIBLE);
-                        dest2.setVisibility(View.VISIBLE);
-                        dest3.setVisibility(View.VISIBLE);
-                        dest4.setVisibility(View.VISIBLE);
-                        destIcon1.setVisibility(View.VISIBLE);
-                        destIcon2.setVisibility(View.VISIBLE);
-                        destIcon3.setVisibility(View.VISIBLE);
-                    }
-
-
-                    bottomSheet.setVisibility(View.GONE);
-                    bottomSheet2.setVisibility(View.VISIBLE);
-
-
-                }else{
-                    Toast.makeText(getContext(), "Please choose a destination", Toast.LENGTH_SHORT).show();
                 }
-            }
 
 
-        });
+            }}});
 
 
 
@@ -433,34 +435,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
                 .transportMode(TransportMode.DRIVING)
                 .execute(this);
 
-      /*  Routing routing = new Routing.Builder()
-                .travelMode(Routing.TravelMode.DRIVING)
-                // .waypoints(clickedMarker,new LatLng(mLastKnownLocation.getLatitude(),mLastKnownLocation.getLongitude()))
-                .waypoints(mLastLocation, clickedMarker)
-                .withListener(this)
-                .build();
-        routing.execute();
-*/
-
     }
 
-    //private List<Polyline> polylines;
-    //private static final int[] COLORS = new int[]{R.color.primary_dark_material_light};
-/*
-    @Override
-    public void onRoutingFailure(RouteException e) {
 
-        if (e != null) {
-            Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        } else {
-            Toast.makeText(getContext(), "Something went wrong, Try again", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    @Override
-    public void onRoutingStart() {
-
-    }*/
 
 
     /*public void onRoutingSuccess(ArrayList<Route> route, int j) {
@@ -501,8 +478,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
     public void onClick(View v) {
 
 
-
-
     }
 
 
@@ -529,6 +504,70 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
 
         return cm.getActiveNetworkInfo() != null;
+    }
+    public void CheckInternet(){
+        if(!isInternetAvailable()){
+            Alerter.create(getActivity())
+                    .setTitle("No internet connection")
+                    .setText("Tap to retry")
+                    .setBackgroundColorInt(Color.RED)
+                    .enableInfiniteDuration(true)
+                    .setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if(isInternetAvailable())
+                            {
+                                Alerter.hide();
+                            }
+                        }})
+                    .setOnShowListener(new OnShowAlertListener() {
+                        @Override
+                        public void onShow() {
+                            if(isInternetAvailable())
+                            {
+                                Alerter.hide();
+                            }
+                        }
+                    })
+                    .show();
+        }
+    }
+
+    public void CheckGPS(){
+        if(!isGpsAvailable(getContext())){
+            Alerter.create(getActivity())
+                    .setTitle("Location is turned off!")
+                    .setText("Please check your location settings")
+                    .setBackgroundColorInt(Color.RED)
+                    .enableInfiniteDuration(true)
+                    .setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                        }})
+
+                    .show();
+
+        }else if(mLastLocation==null){
+            Alerter.create(getActivity())
+                    .setTitle("Can not get location updates")
+                    .setText("Please check your location settings")
+                    .setBackgroundColorInt(Color.RED)
+                    .setDuration(5000)
+                    .setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                        }})
+
+                    .show();
+        }
+
+    }
+
+    public boolean isGpsAvailable(Context context) {
+        LocationManager locationManager =(LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        return locationManager.isProviderEnabled(locationManager.GPS_PROVIDER);
     }
 
 }
