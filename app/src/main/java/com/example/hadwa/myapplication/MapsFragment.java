@@ -11,8 +11,11 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.media.Image;
@@ -61,6 +64,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.maps.android.MarkerManager;
 import com.tapadoo.alerter.Alerter;
 import com.tapadoo.alerter.OnShowAlertListener;
 
@@ -85,8 +89,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
     LatLng mLastLocation;
     private LatLng Dest1 = new LatLng(29.988428, 31.4389311);
     private HashMap<String, LatLng> pinLocations;
-    TextView markerText;
-    View markerIcon;
+    static TextView markerText;
+    static View markerIcon;
 
 
     private final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
@@ -95,13 +99,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
             new LatLng(29.9899635, 31.4445531));
 
 
-
+    static  ImageView markerView;
     private TextView BottomSheetText;
     private View view;
     List<String> Markers;
     RecyclerView recyclerView;
     public static int DestinationCount = 0;
-
+    View cardLayout;
     public MapsFragment() {
         // Required empty public constructor
     }
@@ -290,7 +294,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
             markerText=markerIcon.findViewById(R.id.Markertxt);
             markerText.setText(key);
             mMap.addMarker(new MarkerOptions().position(pinLocations.get(key)).title(key).icon(BitmapDescriptorFactory.fromBitmap(createDrawableFromView(getContext(), markerIcon))));
-
+            MarkerOptions markerOptions = new MarkerOptions();
+            //markerOptions.getTitle();
         }
 
         BottomSheetText = getActivity().findViewById(R.id.WhichStop);
@@ -308,14 +313,16 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
             public boolean onMarkerClick(final Marker marker) {
         if(!Markers.contains(marker.getTitle())) {
             if (DestinationCount < 4) {
-
+                Drawable drawable = null;
                 Markers.add(marker.getTitle());
                 Log.d("brownies", String.valueOf(Markers.size()));
                 //GetRoutToMarker(marker.getPosition());
 
-                ImageView markerView = (ImageView) markerIcon.findViewById(R.id.icon1);
+                 markerView = (ImageView) markerIcon.findViewById(R.id.icon1);
                 markerView.setImageResource(R.drawable.ic_marker_blue);
+                markerText.setText(marker.getTitle());
                 marker.setIcon(BitmapDescriptorFactory.fromBitmap(createDrawableFromView(getContext(), markerIcon)));
+
 
                 BottomSheetText.setText(marker.getTitle());
                 BottomSheetText.setAlpha((float) 0.87);
@@ -408,7 +415,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
 
 
             }}});
-
 
 
 

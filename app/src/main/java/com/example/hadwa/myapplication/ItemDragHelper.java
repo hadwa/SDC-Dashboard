@@ -3,6 +3,9 @@ package com.example.hadwa.myapplication;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
+import android.widget.ImageView;
+
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 
 import java.util.Collections;
 
@@ -31,14 +34,13 @@ class ItemDragHelper extends ItemTouchHelper.Callback {
     @Override
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
 
-
-        if(direction== ItemTouchHelper.UP){
-            itemHelper.Markers.remove(itemHelper.Markers.get(viewHolder.getAdapterPosition()));
-            itemHelper.notifyItemRemoved(viewHolder.getAdapterPosition());
-            MapsFragment.DestinationCount--;
-            Log.d("brownies", String.valueOf(itemHelper.Markers.size()));
-
-        }
+//
+//        if(direction== ItemTouchHelper.UP){
+//            itemHelper.Markers.remove(itemHelper.Markers.get(viewHolder.getAdapterPosition()));
+//            itemHelper.notifyItemRemoved(viewHolder.getAdapterPosition());
+//            MapsFragment.DestinationCount--;
+//            Log.d("brownies", String.valueOf(itemHelper.Markers.size()));
+//        }
 
     }
 
