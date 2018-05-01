@@ -1,8 +1,10 @@
 package com.example.hadwa.myapplication;
 
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -24,7 +26,7 @@ class ItemDragHelper extends ItemTouchHelper.Callback {
 
     public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
         int dragFlags = ItemTouchHelper.RIGHT | ItemTouchHelper.LEFT;
-        return makeMovementFlags(dragFlags, ItemTouchHelper.UP); // Flag Left is not used
+        return makeMovementFlags(dragFlags, ItemTouchHelper.ACTION_STATE_IDLE); // Flag Left is not used
     }
 
     public boolean isLongPressDragEnabled() {
@@ -33,6 +35,7 @@ class ItemDragHelper extends ItemTouchHelper.Callback {
 
     @Override
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+
 
 //
 //        if(direction== ItemTouchHelper.UP){
@@ -50,12 +53,17 @@ class ItemDragHelper extends ItemTouchHelper.Callback {
     }
     public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
 
+
+
         if (actionState != ItemTouchHelper.ACTION_STATE_IDLE) {
+            Log.d("DragHelperr", "am I here?");
             if (viewHolder instanceof ListItemTouchHelper) {
-                // Let the view holder know that this item is being moved or dragged
-                ListItemTouchHelper itemViewHolder = (ListItemTouchHelper) viewHolder;
-                itemViewHolder.onItemSelected();
-            }
+            // Let the view holder know that this item is being moved or dragged
+
+            ((ListItemTouchHelper) viewHolder).onItemSelected();
+        }
+            //viewHolder.itemView.setBackgroundColor(Color.LTGRAY);
+
         }
 
         super.onSelectedChanged(viewHolder, actionState);
