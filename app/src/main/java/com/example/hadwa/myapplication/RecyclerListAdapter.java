@@ -14,6 +14,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import java.util.Collections;
 import java.util.List;
 
+import static com.example.hadwa.myapplication.MapsFragment.chosenMarkerArrayList;
 import static com.example.hadwa.myapplication.MapsFragment.createDrawableFromView;
 import static com.example.hadwa.myapplication.MapsFragment.markerIcon;
 
@@ -49,13 +50,11 @@ public class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerListAdapte
                     Log.d("Position", holder.getAdapterPosition()+"");
                     Markers.remove(holder.getAdapterPosition());
                     MapsFragment.DestinationCount--;
+                    MapsFragment.markerView.setImageResource(R.drawable.ic_marker_black);
+                    MapsFragment.markerText.setText(MapsFragment.chosenMarkerArrayList.get(holder.getAdapterPosition()).getTitle());
+                    MapsFragment.chosenMarkerArrayList.get(holder.getAdapterPosition()).setIcon(BitmapDescriptorFactory.fromBitmap(createDrawableFromView(MapsFragment.markerIcon.getContext(), markerIcon)));
+                    chosenMarkerArrayList.remove(holder.getAdapterPosition());
                     notifyItemRemoved(holder.getAdapterPosition());
-//                    MapsFragment.markerView.setImageResource(R.drawable.ic_marker_blue);
-//
-//                    MapsFragment.markerText.setText(marker.getTitle());
-//                    MapsFragment.marker.setIcon(BitmapDescriptorFactory.fromBitmap(createDrawableFromView(MapsFragment.markerIcon.getContext(), markerIcon)));
-
-                    //notifyItemRemoved(position);
                 }
             });
         }
