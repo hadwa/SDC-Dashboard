@@ -35,6 +35,8 @@ public class MapsActivity extends AppCompatActivity{
         }
         if(MapsFragment.appState == "routeReady"){
             Toast.makeText(getApplicationContext(), " Route ready", Toast.LENGTH_SHORT).show();
+            MapsFragment.appState = "initialState";
+            MapsFragment.removePolylines();
             MapsFragment.bottomSheet.setVisibility(View.VISIBLE);
             MapsFragment.bottomSheet2.setVisibility(View.GONE);
         }

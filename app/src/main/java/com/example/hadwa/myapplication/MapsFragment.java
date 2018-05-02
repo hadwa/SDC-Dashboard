@@ -56,7 +56,9 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -64,6 +66,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.MarkerManager;
 import com.tapadoo.alerter.Alerter;
 import com.tapadoo.alerter.OnShowAlertListener;
@@ -79,14 +83,14 @@ import static com.example.hadwa.myapplication.R.drawable.ic_marker_black;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MapsFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener,DirectionCallback{
+public class MapsFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener,DirectionCallback, GoogleMap.OnMarkerClickListener{
 
-    private GoogleMap mMap;
+    private static GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationClient;
     LocationRequest mLocationRequest;
     private LocationCallback mLocationCallback;
     boolean mRequestingLocationUpdates;
-    LatLng mLastLocation;
+    static LatLng mLastLocation;
     private LatLng Dest1 = new LatLng(29.988428, 31.4389311);
     private HashMap<String, LatLng> pinLocations;
     static ArrayList<Marker> chosenMarkerArrayList;
@@ -110,6 +114,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
     private int backpress;
     static LinearLayout bottomSheet;
     static LinearLayout bottomSheet2;
+    private static ArrayList<Polyline> polylines;
 
     public MapsFragment() {
         // Required empty public constructor
@@ -279,7 +284,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
+        mMap.setOnMarkerClickListener(this);
 
         LatLng Admission = new LatLng(29.988428, 31.4389311);
         final LatLng B = new LatLng(29.9859256, 31.4386074);
@@ -309,40 +314,41 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
         mMap.setMinZoomPreference(16);
         mMap.setLatLngBoundsForCameraTarget(GUC_BOUNDS);
-
-
-        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.N)
-            @Override
-            public boolean onMarkerClick(final Marker marker) {
-        if(!Markers.contains(marker.getTitle())) {
-            if (DestinationCount < 4) {
-                Drawable drawable = null;
-                Markers.add(marker.getTitle());
-                chosenMarkerArrayList.add(marker);
-                Log.d("brownies", String.valueOf(Markers.size()));
-                //GetRoutToMarker(marker.getPosition());
-
-                 markerView = (ImageView) markerIcon.findViewById(R.id.icon1);
-                markerView.setImageResource(R.drawable.ic_marker_blue);
-                markerText.setText(marker.getTitle());
-                marker.setIcon(BitmapDescriptorFactory.fromBitmap(createDrawableFromView(getContext(), markerIcon)));
-
-
-                BottomSheetText.setText(marker.getTitle());
-                BottomSheetText.setAlpha((float) 0.87);
-                DestinationCount++;
-            } else {
-                Toast.makeText(getContext(), "Maximum destinations reached", Toast.LENGTH_SHORT).show();
-            }
-        }else{
-            Toast.makeText(getContext(), "Duplicate destinations", Toast.LENGTH_SHORT).show();
-        }
-
-
-                return true;
-            }
-        });
+        LatLng latLng = new LatLng(29.9867788,31.441697);
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
+//        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+//            @RequiresApi(api = Build.VERSION_CODES.N)
+//            @Override
+//            public boolean onMarkerClick(final Marker marker) {
+//        if(!Markers.contains(marker.getTitle())) {
+//            if (DestinationCount < 4) {
+//                Drawable drawable = null;
+//                Markers.add(marker.getTitle());
+//                chosenMarkerArrayList.add(marker);
+//                Log.d("brownies", String.valueOf(Markers.size()));
+//                //GetRoutToMarker(marker.getPosition());
+//
+//                 markerView = (ImageView) markerIcon.findViewById(R.id.icon1);
+//                markerView.setImageResource(R.drawable.ic_marker_blue);
+//                markerText.setText(marker.getTitle());
+//                marker.setIcon(BitmapDescriptorFactory.fromBitmap(createDrawableFromView(getContext(), markerIcon)));
+//
+//
+//                BottomSheetText.setText(marker.getTitle());
+//                BottomSheetText.setAlpha((float) 0.87);
+//                DestinationCount++;
+//            } else {
+//                Toast.makeText(getContext(), "Maximum destinations reached", Toast.LENGTH_SHORT).show();
+//            }
+//        }else{
+//            Toast.makeText(getContext(), "Duplicate destinations", Toast.LENGTH_SHORT).show();
+//        }
+//
+//
+//                return true;
+//            }
+//        });
 
 
         Button Start = (Button) getActivity().findViewById(R.id.start);
@@ -354,14 +360,14 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
                     CheckGPS();
                     if(isGpsAvailable(getContext())){
                     if (Markers.size() > 0) {
-                        if(appState.equals("routeReady")) {
-                            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-                                @Override
-                                public boolean onMarkerClick(Marker marker) {
-                                    return true;
-                                }
-                            });
-                        }
+//                        if(appState.equals("routeReady")) {
+//                            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+//                                @Override
+//                                public boolean onMarkerClick(Marker marker) {
+//                                    return true;
+//                                }
+//                            });
+//                        }
                         GetRoutToMarker(pinLocations.get(Markers.get(0)));
                          bottomSheet = (LinearLayout) getActivity().findViewById(R.id.BottomSheet_layout);
                          bottomSheet2 = (LinearLayout) getActivity().findViewById(R.id.BottomSheet_layout2);
@@ -374,6 +380,14 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
                         ImageView destIcon1 = (ImageView) getActivity().findViewById(R.id.dest_icon1);
                         ImageView destIcon2 = (ImageView) getActivity().findViewById(R.id.dest_icon2);
                         ImageView destIcon3 = (ImageView) getActivity().findViewById(R.id.dest_icon3);
+
+                        dest1.setVisibility(View.GONE);
+                        dest2.setVisibility(View.GONE);
+                        dest3.setVisibility(View.GONE);
+                        dest4.setVisibility(View.GONE);
+                        destIcon1.setVisibility(View.GONE);
+                        destIcon2.setVisibility(View.GONE);
+                        destIcon3.setVisibility(View.GONE);
 
                         if (Markers.size() == 1) {
                             dest1.setText(Markers.get(0));
@@ -428,7 +442,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         createLocationRequest();
         startLocationUpdates();
 
-        //mMap.moveCamera(CameraUpdateFactory.newLatLng(GUC));
+
 
 
 
@@ -512,8 +526,15 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
             Log.d("Polylines", String.valueOf(direction.getRouteList().get(0)));
             Route route = direction.getRouteList().get(0);
             ArrayList<LatLng> directionPositionList = route.getLegList().get(0).getDirectionPoint();
-            mMap.addPolyline(DirectionConverter.createPolyline(getContext(), directionPositionList, 4, Color.BLACK));
-            //setCameraWithCoordinationBounds(route);
+            //mMap.addPolyline(DirectionConverter.createPolyline(getContext(), directionPositionList, 4, Color.BLACK));
+            polylines = new ArrayList<>();
+            PolylineOptions polyOptions = new PolylineOptions();
+            polyOptions.color(Color.BLACK);
+            polyOptions.width(6);
+            polyOptions.addAll(directionPositionList);
+            Polyline polyline = mMap.addPolyline(polyOptions);
+            polylines.add(polyline);
+            setCameraWithCoordinationBounds(route);
         }
     }
 
@@ -592,5 +613,54 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         return locationManager.isProviderEnabled(locationManager.GPS_PROVIDER);
     }
 
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+
+        //Log.d("markercb", "ana geet hena");
+        if(appState == "initialState") {
+            if (!Markers.contains(marker.getTitle())) {
+                if (DestinationCount < 4) {
+                    Drawable drawable = null;
+                    Markers.add(marker.getTitle());
+                    chosenMarkerArrayList.add(marker);
+                    Log.d("brownies", String.valueOf(Markers.size()));
+                    //GetRoutToMarker(marker.getPosition());
+
+                    markerView = (ImageView) markerIcon.findViewById(R.id.icon1);
+                    markerView.setImageResource(R.drawable.ic_marker_blue);
+                    markerText.setText(marker.getTitle());
+                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(createDrawableFromView(getContext(), markerIcon)));
+
+
+                    BottomSheetText.setText(marker.getTitle());
+                    BottomSheetText.setAlpha((float) 0.87);
+                    DestinationCount++;
+                } else {
+                    Toast.makeText(getContext(), "Maximum destinations reached", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(getContext(), "Duplicate destinations", Toast.LENGTH_SHORT).show();
+            }
+
+        }
+        return true;
+    }
+
+    public static void removePolylines(){
+        if (polylines.size() > 0) {
+            for (Polyline poly : polylines) {
+                poly.remove();
+            }
+        }
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(mLastLocation));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
+    }
+    private void setCameraWithCoordinationBounds(Route route) {
+        LatLng southwest = route.getBound().getSouthwestCoordination().getCoordination();
+        LatLng northeast = route.getBound().getNortheastCoordination().getCoordination();
+        LatLngBounds bounds = new LatLngBounds(southwest, northeast);
+        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100));
+    }
 
 }
