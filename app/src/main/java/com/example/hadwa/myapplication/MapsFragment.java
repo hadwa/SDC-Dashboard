@@ -51,6 +51,10 @@ import com.akexorcist.googledirection.constant.TransportMode;
 import com.akexorcist.googledirection.model.Direction;
 import com.akexorcist.googledirection.model.Route;
 import com.akexorcist.googledirection.util.DirectionConverter;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -68,14 +72,21 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.gson.Gson;
 import com.google.maps.android.MarkerManager;
 import com.tapadoo.alerter.Alerter;
 import com.tapadoo.alerter.OnShowAlertListener;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+
 
 import static com.example.hadwa.myapplication.R.drawable.ic_marker_black;
 
@@ -115,7 +126,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
     static LinearLayout bottomSheet;
     static LinearLayout bottomSheet2;
     private static ArrayList<Polyline> polylines;
-
+    private Gson gson;
     public MapsFragment() {
         // Required empty public constructor
     }
@@ -290,24 +301,24 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         LatLng Admission = new LatLng(29.988428, 31.4389311);
         final LatLng B = new LatLng(29.9859256, 31.4386074);
         final LatLng C = new LatLng(29.9859929, 31.4392198);
+        getMarkersFromServer();
 
 
-
-        pinLocations.put("Admission Building", new LatLng(29.988428, 31.4389311));
-        pinLocations.put("B Building", new LatLng(29.9859256, 31.4386074));
-        pinLocations.put("C Building", new LatLng(29.9859929, 31.4392198));
-        pinLocations.put("D Building", new LatLng(29.9870481, 31.4410851));
-        pinLocations.put("Parking", new LatLng(29.985347, 31.440862));
+//        pinLocations.put("Admission Building", new LatLng(29.988428, 31.4389311));
+//        pinLocations.put("B Building", new LatLng(29.9859256, 31.4386074));
+//        pinLocations.put("C Building", new LatLng(29.9859929, 31.4392198));
+//        pinLocations.put("D Building", new LatLng(29.9870481, 31.4410851));
+//        pinLocations.put("Parking", new LatLng(29.985347, 31.440862));
 
 //        mMap.addMarker(new MarkerOptions().position(Admission).title("Admission Building"));
 //        mMap.addMarker(new MarkerOptions().position(B).title("B Building"));
 //        mMap.addMarker(new MarkerOptions().position(C).title("C Building"));
-
-        for(String key : pinLocations.keySet()){
-            markerText=markerIcon.findViewById(R.id.Markertxt);
-            markerText.setText(key);
-            mMap.addMarker(new MarkerOptions().position(pinLocations.get(key)).title(key).icon(BitmapDescriptorFactory.fromBitmap(createDrawableFromView(getContext(), markerIcon))));
-         }
+        Log.d("osamaa", String.valueOf(pinLocations.size()));
+//        for(String key : pinLocations.keySet()){
+//            markerText=markerIcon.findViewById(R.id.Markertxt);
+//            markerText.setText(key);
+//            mMap.addMarker(new MarkerOptions().position(pinLocations.get(key)).title(key).icon(BitmapDescriptorFactory.fromBitmap(createDrawableFromView(getContext(), markerIcon))));
+//         }
         BottomSheetText = getActivity().findViewById(R.id.WhichStop);
         BottomSheetText.setText("Pick a drop-off location");
         BottomSheetText.setAlpha((float) 0.54);
@@ -662,6 +673,46 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         LatLng northeast = route.getBound().getNortheastCoordination().getCoordination();
         LatLngBounds bounds = new LatLngBounds(southwest, northeast);
         mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100));
+    }
+
+    private void getMarkersFromServer(){
+        String url = "https://sdc-trip-car-management.herokuapp.com/guc/pins";
+        Log.d("osamaa", "I entered1");
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest
+                (Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
+
+                    @Override
+                    public void onResponse(JSONArray response) {
+
+                        for(int i=0;i<response.length();i++){
+                            try {
+                                JSONObject responseObject = response.getJSONObject(i);
+                                Log.d("osamaa", responseObject.get("name").toString());
+                                Log.d("osamaa", String.valueOf(new LatLng(responseObject.getJSONObject("latLng").getDouble("latitude"), responseObject.getJSONObject("latLng").getDouble("longitude"))));
+                                pinLocations.put(responseObject.getString("name"), new LatLng(responseObject.getJSONObject("latLng").getDouble("latitude"), responseObject.getJSONObject("latLng").getDouble("longitude")));
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        for(String key : pinLocations.keySet()){
+                            markerText=markerIcon.findViewById(R.id.Markertxt);
+                            markerText.setText(key);
+                            mMap.addMarker(new MarkerOptions().position(pinLocations.get(key)).title(key).icon(BitmapDescriptorFactory.fromBitmap(createDrawableFromView(getContext(), markerIcon))));
+                        }
+//                        drawPins(gucPlaces);
+//                        MainActivity.gucPlaces = gucPlaces;
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                    }
+                });
+
+        // Access the RequestQueue through your singleton class.
+        MySingleton.getInstance(getActivity()).addToRequestQueue(jsonArrayRequest);
+
     }
 
 }
