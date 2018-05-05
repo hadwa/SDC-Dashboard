@@ -156,6 +156,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
 
 
         recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
+        recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.HORIZONTAL,false));
 
         Markers = new ArrayList<>();
