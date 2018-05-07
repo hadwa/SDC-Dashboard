@@ -75,6 +75,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.maps.android.MarkerManager;
 import com.tapadoo.alerter.Alerter;
@@ -169,7 +170,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gson = gsonBuilder.create();
 
         recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
         recyclerView.setHasFixedSize(true);
