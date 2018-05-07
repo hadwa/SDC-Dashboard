@@ -52,9 +52,11 @@ import com.akexorcist.googledirection.model.Direction;
 import com.akexorcist.googledirection.model.Route;
 import com.akexorcist.googledirection.util.DirectionConverter;
 import com.android.volley.Request;
+import com.android.volley.Request.Method;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -73,6 +75,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.google.maps.android.MarkerManager;
 import com.tapadoo.alerter.Alerter;
 import com.tapadoo.alerter.OnShowAlertListener;
@@ -143,6 +146,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
 //         markerIcon = ((LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_marker_layout, null);
         appState = "initialState";
         CheckInternet();
+        getTripFromServer();
 
         //polylines = new ArrayList<>();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
@@ -676,7 +680,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         String pinUrl = "https://sdc-trip-car-management.herokuapp.com/guc/pins";
         Log.d("osamaa", "I entered1");
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest
-                (Request.Method.GET, pinUrl, null, new Response.Listener<JSONArray>() {
+                (Method.GET, pinUrl, null, new Response.Listener<JSONArray>() {
 
                     @Override
                     public void onResponse(JSONArray response) {
@@ -717,21 +721,24 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
 
     private void getTripFromServer() {
         String tripUrl = "https://sdc-trip-car-management.herokuapp.com/car/find/car2";
-        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest
-                (Request.Method.GET, tripUrl, null, new Response.Listener<JSONArray>() {
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Method.GET, tripUrl, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.d("testtest", response.toString());
+                JSONObject obj = response;
+                Car car = gson.fromJson(obj.toString(), Car.class);
 
-                    @Override
-                    public void onResponse(JSONArray response) {
+                Log.d("testtest", car.getcarID()+"");
+            }
+        }, new Response.ErrorListener() {
 
-                    }
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                // TODO: Handle error
 
-
-                }, new Response.ErrorListener() {
-
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-
-                    }
-                });
+            }
+        });
+        // Access the RequestQueue through your singleton class.
+        MySingleton.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
     }
 }
