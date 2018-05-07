@@ -24,6 +24,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.ContactsContract;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
@@ -74,6 +75,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.firebase.messaging.RemoteMessage;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -89,7 +91,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 
 
 import static com.example.hadwa.myapplication.R.drawable.ic_marker_black;
@@ -100,7 +102,7 @@ import static com.example.hadwa.myapplication.R.drawable.ic_marker_black;
  */
 public class MapsFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener,DirectionCallback, GoogleMap.OnMarkerClickListener {
 
-    private static GoogleMap mMap;
+    static GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationClient;
     LocationRequest mLocationRequest;
     private LocationCallback mLocationCallback;
@@ -455,6 +457,15 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
             }
         });
 
+        Button confirmRide = (Button) getActivity().findViewById(R.id.confirm_ride);
+        confirmRide.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent visualizationIntent = new Intent(getActivity(), VisualizationActivity.class);
+                startActivity(visualizationIntent);
+                getActivity().getSupportFragmentManager().beginTransaction().remove(MapsFragment.this);
+            }
+        });
 
         createLocationRequest();
         startLocationUpdates();
@@ -726,11 +737,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Method.GET, tripUrl, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                Log.d("testtest", response.toString());
+                //Log.d("testtest", response.toString());
                 JSONObject obj = response;
                 Car car = gson.fromJson(obj.toString(), Car.class);
+                if(car.getCurrentTrip()!=null){
+                    Trip trip = car.getCurrentTrip();
+                }
 
-                Log.d("testtest", car.getcarID()+"");
             }
         }, new Response.ErrorListener() {
 
@@ -743,4 +756,28 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         // Access the RequestQueue through your singleton class.
         MySingleton.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
     }
-}
+
+
+    public static void switchFcmStatus(Map<String,String> data){
+
+        String status = data.get("STATUS");
+        String carID = data.get("CAR_ID");
+        String tripID=data.get("TRIP_ID");
+        switch (status) {
+
+            case "NEW":
+                break;
+            case "CANCEL":
+                break;
+            case "END":
+                break;
+            case "START":
+                break;
+            case "MODIFY":
+                break;
+
+        }
+        }
+    }
+
+

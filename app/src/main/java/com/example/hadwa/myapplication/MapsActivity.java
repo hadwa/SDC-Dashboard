@@ -23,7 +23,6 @@ public class MapsActivity extends AppCompatActivity{
         this.setTitle(Html.fromHtml("<font color='#000000'>Please choose your drop-off point</font>"));
         MapsFragment MapsFragment = new MapsFragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container_2, MapsFragment, "").commit();
-
     }
 
 

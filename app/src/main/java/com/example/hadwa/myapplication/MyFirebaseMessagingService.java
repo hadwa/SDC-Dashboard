@@ -12,6 +12,8 @@ import android.widget.Toast;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import java.util.Map;
+
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
@@ -58,5 +60,15 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 Toast.makeText(getApplicationContext(), remoteMessage.getNotification().getBody() , Toast.LENGTH_LONG).show();
             }
         });
+
+        Map<String,String> data = remoteMessage.getData();
+        MapsFragment.switchFcmStatus(data);
+
+
     }
+
+
+
+
+
 }
