@@ -109,7 +109,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
     boolean mRequestingLocationUpdates;
     static LatLng mLastLocation;
     private LatLng Dest1 = new LatLng(29.988428, 31.4389311);
-    private HashMap<String, LatLng> pinLocations;
+    static HashMap<String, LatLng> pinLocations;
     static ArrayList<Marker> chosenMarkerArrayList;
     static TextView markerText;
     static View markerIcon;
@@ -124,7 +124,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
     static ImageView markerView;
     private TextView BottomSheetText;
     private View view;
-    List<String> Markers;
+    static List<String> Markers;
     RecyclerView recyclerView;
     public static int DestinationCount = 0;
     View cardLayout;
@@ -373,7 +373,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         Start.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 CheckInternet();
-                appState = "routeReady";
                 if (isInternetAvailable()) {
                     CheckGPS();
                     if (isGpsAvailable(getContext())) {
@@ -386,6 +385,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
 //                                }
 //                            });
 //                        }
+                            appState = "routeReady";
                             GetRoutToMarker(pinLocations.get(Markers.get(0)));
                             bottomSheet = (LinearLayout) getActivity().findViewById(R.id.BottomSheet_layout);
                             bottomSheet2 = (LinearLayout) getActivity().findViewById(R.id.BottomSheet_layout2);
@@ -462,6 +462,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
             @Override
             public void onClick(View v) {
                 Intent visualizationIntent = new Intent(getActivity(), VisualizationActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putParcelable("destination", pinLocations.get(Markers.get(0)));
+                visualizationIntent.putExtra("bundle", bundle);
+                //visualizationIntent.putExtra("destination", pinLocations.get(Markers.get(0)));
                 startActivity(visualizationIntent);
                 getActivity().getSupportFragmentManager().beginTransaction().remove(MapsFragment.this);
             }

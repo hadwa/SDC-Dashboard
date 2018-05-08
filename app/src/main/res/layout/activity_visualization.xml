@@ -57,6 +57,14 @@
         android:layout_marginTop="112dp"
         android:text="ONLINE – IN RIDE" />
 
+    <com.github.anastr.speedviewlib.SpeedView
+        android:id="@+id/speedView"
+        android:layout_width="194dp"
+        android:layout_height="155dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignStart="@+id/textView4"
+        android:layout_marginStart="56dp" />
+
     <TextView
         android:id="@+id/textView4"
         android:layout_width="wrap_content"
