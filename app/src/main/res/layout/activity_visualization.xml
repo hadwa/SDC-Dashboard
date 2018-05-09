@@ -29,13 +29,12 @@
     <fragment
         android:id="@+id/map1"
         android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="174dp"
-        android:layout_height="150dp"
+        android:layout_width="502dp"
+        android:layout_height="282dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
         android:layout_marginEnd="26dp"
-        android:layout_marginTop="19dp"
-        />
+        android:layout_marginTop="14dp" />
 
     <TextView
         android:id="@+id/textView2"
@@ -57,13 +56,13 @@
         android:layout_marginTop="112dp"
         android:text="ONLINE – IN RIDE" />
 
-    <com.github.anastr.speedviewlib.SpeedView
-        android:id="@+id/speedView"
-        android:layout_width="194dp"
-        android:layout_height="155dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignStart="@+id/textView4"
-        android:layout_marginStart="56dp" />
+    <!--<com.github.anastr.speedviewlib.SpeedView-->
+        <!--android:id="@+id/speedView"-->
+        <!--android:layout_width="194dp"-->
+        <!--android:layout_height="155dp"-->
+        <!--android:layout_alignParentBottom="true"-->
+        <!--android:layout_alignStart="@+id/textView4"-->
+        <!--android:layout_marginStart="56dp" />-->
 
     <TextView
         android:id="@+id/textView4"

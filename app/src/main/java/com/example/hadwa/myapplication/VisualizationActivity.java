@@ -72,6 +72,10 @@ public class VisualizationActivity extends AppCompatActivity implements OnMapRea
             public void onLocationResult(LocationResult locationResult) {
                 Log.v("osama", "I reached callback");
                 for (Location location : locationResult.getLocations()) {
+                    if(mLastLocation==null){
+                        mLastLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                        GetRoutToMarker(loc);
+                    }
                     mLastLocation = new LatLng(location.getLatitude(), location.getLongitude());
                     mMap.animateCamera(CameraUpdateFactory.newLatLng(mLastLocation));
                     Log.v("osama", mLastLocation.toString());
@@ -83,7 +87,7 @@ public class VisualizationActivity extends AppCompatActivity implements OnMapRea
         //MapFragment mGoogleMap = (MapFragment) getFragmentManager() .findFragmentById(R.id.map);
         mGoogleMap.getMapAsync(this);
 
-        SpeedView speedometer = findViewById(R.id.speedView);
+//        SpeedView speedometer = findViewById(R.id.speedView);
 //        View bottomSheet=findViewById(R.id.BottomSheet_layout);
 //        bottomSheet.setVisibility(View.GONE);
 
@@ -114,13 +118,13 @@ public class VisualizationActivity extends AppCompatActivity implements OnMapRea
         createLocationRequest();
         startLocationUpdates();
 //        Log.d("hadwa-nayma", mLastLocation.toString());
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                GetRoutToMarker(loc);
-            }
-        }, 1000);
+//        final Handler handler = new Handler();
+//        handler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                GetRoutToMarker(loc);
+//            }
+//        }, 10000);
 
 
     }
@@ -128,13 +132,13 @@ public class VisualizationActivity extends AppCompatActivity implements OnMapRea
     public void onResume() {
         super.onResume();
 
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                GetRoutToMarker(loc);
-            }
-        }, 1000);
+//        final Handler handler = new Handler();
+//        handler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                GetRoutToMarker(loc);
+//            }
+//        }, 10000);
     }
 
     private void GetRoutToMarker(LatLng clickedMarker) {
@@ -164,7 +168,7 @@ public class VisualizationActivity extends AppCompatActivity implements OnMapRea
             polyOptions.addAll(directionPositionList);
             Polyline polyline = mMap.addPolyline(polyOptions);
             polylines.add(polyline);
-            setCameraWithCoordinationBounds(route);
+            //setCameraWithCoordinationBounds(route);
         }
         
     }
@@ -195,7 +199,12 @@ public class VisualizationActivity extends AppCompatActivity implements OnMapRea
         LatLng southwest = route.getBound().getSouthwestCoordination().getCoordination();
         LatLng northeast = route.getBound().getNortheastCoordination().getCoordination();
         LatLngBounds bounds = new LatLngBounds(southwest, northeast);
-        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100));
+        final int width = getResources().getDisplayMetrics().widthPixels;
+        final int height = getResources().getDisplayMetrics().heightPixels;
+        final int minMetric = Math.min(width, height);
+        final int padding = (int) (minMetric * 0.40); // offset from edges of the map in pixels
+        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding));
+
     }
 
     @SuppressLint("RestrictedApi")
