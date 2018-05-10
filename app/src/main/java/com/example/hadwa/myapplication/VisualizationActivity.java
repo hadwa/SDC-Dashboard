@@ -42,6 +42,8 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
 
+import in.unicodelabs.kdgaugeview.KdGaugeView;
+
 public class VisualizationActivity extends AppCompatActivity implements OnMapReadyCallback ,DirectionCallback {
     private static final LatLngBounds GUC_BOUNDS = new LatLngBounds(new LatLng(29.9842014, 31.4387794),
             new LatLng(29.9899635, 31.4445531));
@@ -53,6 +55,7 @@ public class VisualizationActivity extends AppCompatActivity implements OnMapRea
     LatLng mLastLocation;
     private ArrayList<Polyline> polylines;
     private LatLng loc;
+    KdGaugeView speedoMeterView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,7 +86,7 @@ public class VisualizationActivity extends AppCompatActivity implements OnMapRea
         //MapFragment mGoogleMap = (MapFragment) getFragmentManager() .findFragmentById(R.id.map);
         mGoogleMap.getMapAsync(this);
 
-        SpeedView speedometer = findViewById(R.id.speedView);
+//        SpeedView speedometer = findViewById(R.id.speedView);
 //        View bottomSheet=findViewById(R.id.BottomSheet_layout);
 //        bottomSheet.setVisibility(View.GONE);
 
@@ -121,6 +124,8 @@ public class VisualizationActivity extends AppCompatActivity implements OnMapRea
                 GetRoutToMarker(loc);
             }
         }, 1000);
+        speedoMeterView = (KdGaugeView)findViewById(R.id.speedMeter);
+        speedoMeterView.setSpeed(20);
 
 
     }
@@ -164,7 +169,7 @@ public class VisualizationActivity extends AppCompatActivity implements OnMapRea
             polyOptions.addAll(directionPositionList);
             Polyline polyline = mMap.addPolyline(polyOptions);
             polylines.add(polyline);
-            setCameraWithCoordinationBounds(route);
+           // setCameraWithCoordinationBounds(route);
         }
         
     }
