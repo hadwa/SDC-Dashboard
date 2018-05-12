@@ -113,7 +113,6 @@ public class VisualizationActivity extends AppCompatActivity implements OnMapRea
         mMap.getUiSettings().setMyLocationButtonEnabled(false);
         Bundle bundle = getIntent().getParcelableExtra("bundle");
         loc = bundle.getParcelable("destination");
-        Log.d("hadwa-nayma", loc.toString());
         createLocationRequest();
         startLocationUpdates();
 //        Log.d("hadwa-nayma", mLastLocation.toString());
