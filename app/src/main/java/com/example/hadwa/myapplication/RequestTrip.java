@@ -2,24 +2,21 @@ package com.example.hadwa.myapplication;
 
 import com.google.android.gms.maps.model.LatLng;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class Trip {
-    private String id;
 
-    private String event;
+public class RequestTrip {
+    private String id;
 
     private Date requestTime;
     private Date carArriveTime;
     private Date startTime;
     private Date endTime;
     private Date cancelTime;
-    private Date carArriveFinal;
 
     private LatLng pickupLocation;
-    private List<TripDestination> destinations;
+    private List<LatLng> destinations;
 
     private String carID;
     private String carFcmToken;
@@ -27,10 +24,10 @@ public class Trip {
     private String userFcmToken;
     private String tabletFcmToken;
 
-    public Trip() {
+    public RequestTrip() {
     }
 
-    public Trip(String carID, String userID, LatLng pickupLocation, List<TripDestination> destinations) {
+    public RequestTrip(String carID, String userID, LatLng pickupLocation, List<LatLng> destinations) {
         this.requestTime = new Date();
         this.carID = carID;
         this.userID = userID;
@@ -74,11 +71,11 @@ public class Trip {
         this.pickupLocation = pickupLocation;
     }
 
-    public List<TripDestination> getDestinations() {
+    public List<LatLng> getDestinations() {
         return destinations;
     }
 
-    public void setDestinations(List<TripDestination> destinations) {
+    public void setDestinations(List<LatLng> destinations) {
         this.destinations = destinations;
     }
 
@@ -136,30 +133,5 @@ public class Trip {
 
     public void setCarArriveTime(Date carArriveTime) {
         this.carArriveTime = carArriveTime;
-    }
-
-    public Date getCarArriveFinal() {
-        return carArriveFinal;
-    }
-
-    public void setCarArriveFinal(Date carArriveFinal) {
-        this.carArriveFinal = carArriveFinal;
-    }
-
-    public static Trip toTrip(RequestTrip requestTrip){
-        Trip trip = new Trip();
-        trip.setPickupLocation(requestTrip.getPickupLocation());
-        trip.setUserFcmToken(requestTrip.getUserFcmToken());
-        trip.setUserID(requestTrip.getUserID());
-        List<TripDestination> destinations = new ArrayList<>();
-        for(LatLng latLng : requestTrip.getDestinations()){
-            destinations.add(new TripDestination(latLng));
-        }
-        trip.setDestinations(destinations);
-        return trip;
-    }
-
-    public String getEvent() {
-        return event;
     }
 }
