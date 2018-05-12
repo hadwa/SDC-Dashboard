@@ -25,4 +25,9 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
 
        // sendRegistrationToServer(refreshedToken);
     }
+
+    public static String getToken(){
+        String token = FirebaseInstanceId.getInstance().getToken();
+        return token;
+    }
 }

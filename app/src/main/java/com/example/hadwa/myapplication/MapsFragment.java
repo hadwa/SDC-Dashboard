@@ -5,9 +5,11 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -32,6 +34,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
@@ -114,13 +117,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
     static TextView markerText;
     static View markerIcon;
     static String appState;
-
+    RequestTrip requestTrip;
     private final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
     public static final int REQUEST_CHECK_SETTINGS = 10;
     private static final LatLngBounds GUC_BOUNDS = new LatLngBounds(new LatLng(29.9842014, 31.4387794),
             new LatLng(29.9899635, 31.4445531));
 
-
+    Trip createdTrip;
     static ImageView markerView;
     private TextView BottomSheetText;
     private View view;
@@ -132,8 +135,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
     static LinearLayout bottomSheet;
     static LinearLayout bottomSheet2;
     private static ArrayList<Polyline> polylines;
-    private Gson gson;
+    private static Gson gson;
     boolean markersRequested = false;
+
+
     public MapsFragment() {
         // Required empty public constructor
     }
@@ -149,11 +154,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
 //         markerIcon = ((LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_marker_layout, null);
         appState = "initialState";
         CheckInternet();
-        getTripFromServer();
-
+//        getTripFromServer();
         //polylines = new ArrayList<>();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
         //NewText = (TextView)findViewById(R.id.WhichStop);
+
+        requestTrip = new RequestTrip();
+        createdTrip = new Trip();
 
         mLocationCallback = new LocationCallback() {
             @Override
@@ -189,7 +196,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         ItemTouchHelper dragHelper = new ItemTouchHelper(callBack);
         dragHelper.attachToRecyclerView(recyclerView);
 
-
+        //IntentFilter filter = new IntentFilter();
+        LocalBroadcastManager.getInstance(this.getActivity()).registerReceiver((mMessageReceiver),
+                new IntentFilter("FcmData")
+        );
         return view;
 
     }
@@ -202,6 +212,35 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundle = intent.getExtras();
+            String status = bundle.getString("EVENT");
+            String carID = bundle.getString("CAR_ID");
+            String tripID=bundle.getString("TRIP_ID");
+            switch (status) {
+
+                case "NEW":
+                    getTripFromServer();
+                    break;
+                case "CANCEL":
+                    break;
+                case "END":
+                    break;
+                case "START":
+                    startTripFromServer();
+                    break;
+                case "MODIFY":
+                    break;
+
+            }
+//            if(status != null && status.length()>0 ){
+//
+//            }
+            //Log.d("yahbaaal", "ana geeh hena");
+        }
+    };
     @Override
     public void onResume() {
         super.onResume();
@@ -470,13 +509,14 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         confirmRide.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent visualizationIntent = new Intent(getActivity(), VisualizationActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putParcelable("destination", pinLocations.get(Markers.get(0)));
-                visualizationIntent.putExtra("bundle", bundle);
-                //visualizationIntent.putExtra("destination", pinLocations.get(Markers.get(0)));
-                startActivity(visualizationIntent);
-                getActivity().getSupportFragmentManager().beginTransaction().remove(MapsFragment.this);
+                createTrip();
+//                Intent visualizationIntent = new Intent(getActivity(), VisualizationActivity.class);
+//                Bundle bundle = new Bundle();
+//                bundle.putParcelable("destination", pinLocations.get(Markers.get(0)));
+//                visualizationIntent.putExtra("bundle", bundle);
+//                //visualizationIntent.putExtra("destination", pinLocations.get(Markers.get(0)));
+//                startActivity(visualizationIntent);
+//                getActivity().getSupportFragmentManager().beginTransaction().remove(MapsFragment.this);
             }
         });
 
@@ -748,7 +788,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         MySingleton.getInstance(getActivity()).addToRequestQueue(jsonArrayRequest);
 
     }
-
+    // TODO: Get pickup location from server, and send to car
+    // TODO: Send to server a POST request when I reach pickup location
     private void getTripFromServer() {
         String tripUrl = "https://sdc-trip-car-management.herokuapp.com/car/find/car2";
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Method.GET, tripUrl, null, new Response.Listener<JSONObject>() {
@@ -759,6 +800,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
                 Car car = gson.fromJson(obj.toString(), Car.class);
                 if(car.getCurrentTrip()!=null){
                     Trip trip = car.getCurrentTrip();
+                    
                 }
 
             }
@@ -774,27 +816,62 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         MySingleton.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
     }
 
-
-    public static void switchFcmStatus(Map<String,String> data){
-
-        String status = data.get("STATUS");
-        String carID = data.get("CAR_ID");
-        String tripID=data.get("TRIP_ID");
-        switch (status) {
-
-            case "NEW":
-                break;
-            case "CANCEL":
-                break;
-            case "END":
-                break;
-            case "START":
-                break;
-            case "MODIFY":
-                break;
-
+    public void createTrip(){
+        String createTripUrl = "https://sdc-trip-car-management.herokuapp.com/trip/create";
+        if(mLastLocation!=null) {
+            Log.d("yahbaaal", mLastLocation.toString());
+            requestTrip.setPickupLocation(mLastLocation);
         }
+        ArrayList<LatLng> destinationList = new ArrayList<LatLng>();
+        for(int i =0; i<chosenMarkerArrayList.size(); i++){
+            destinationList.add(chosenMarkerArrayList.get(i).getPosition());
         }
+        requestTrip.setDestinations(destinationList);
+        requestTrip.setCarID("car2");
+        requestTrip.setTabletFcmToken(MyFirebaseInstanceIDService.getToken());
+
+        String str = gson.toJson(Trip.toTrip(requestTrip));
+        JSONObject trip = new JSONObject();
+        try {
+            trip = new JSONObject(str);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest tripRequest = new JsonObjectRequest(Method.POST, createTripUrl, trip, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                createdTrip = gson.fromJson(response.toString(),Trip.class);
+                Log.d("yahbaaal", createdTrip.getId().toString());
+                Intent visualizationIntent = new Intent(getActivity(), VisualizationActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putParcelable("destination", pinLocations.get(Markers.get(0)));
+                visualizationIntent.putExtra("bundle", bundle);
+                //visualizationIntent.putExtra("destination", pinLocations.get(Markers.get(0)));
+                startActivity(visualizationIntent);
+                getActivity().getSupportFragmentManager().beginTransaction().remove(MapsFragment.this);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        });
+
+        MySingleton.getInstance(getContext()).addToRequestQueue(tripRequest);
+    }
+
+    public void startTripFromServer(){
+        Intent visualizationIntent = new Intent(getActivity(), VisualizationActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("destination", pinLocations.get(Markers.get(0)));
+        visualizationIntent.putExtra("bundle", bundle);
+        //visualizationIntent.putExtra("destination", pinLocations.get(Markers.get(0)));
+        startActivity(visualizationIntent);
+        getActivity().getSupportFragmentManager().beginTransaction().remove(MapsFragment.this);
+    }
+
+
     }
 
 

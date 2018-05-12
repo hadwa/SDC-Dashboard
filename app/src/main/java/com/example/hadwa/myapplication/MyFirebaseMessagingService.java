@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -18,6 +19,13 @@ import java.util.Map;
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private String TAG = "pc1";
+    private LocalBroadcastManager broadcaster;
+
+    @Override
+    public void onCreate() {
+        broadcaster = LocalBroadcastManager.getInstance(this);
+        super.onCreate();
+    }
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
@@ -57,18 +65,23 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Handler handler = new Handler(Looper.getMainLooper());
         handler.post(new Runnable() {
             public void run() {
-                Toast.makeText(getApplicationContext(), remoteMessage.getNotification().getBody() , Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), remoteMessage.getNotification().getBody(), Toast.LENGTH_LONG).show();
             }
         });
+//        Intent intent = new Intent("FcmData");
+//        intent.putExtra("EVENT", "ay 7aga");
+//        broadcaster.sendBroadcast(intent);
+        if (remoteMessage.getData().size() > 0) {
+            Map<String, String> data = remoteMessage.getData();
+            Intent intent = new Intent("FcmData");
+            intent.putExtra("EVENT", remoteMessage.getData().get("EVENT"));
+            intent.putExtra("TRIP_ID", remoteMessage.getData().get("TRIP_ID"));
+            intent.putExtra("CAR_ID", remoteMessage.getData().get("CAR_ID"));
+            broadcaster.sendBroadcast(intent);
 
-        Map<String,String> data = remoteMessage.getData();
-        MapsFragment.switchFcmStatus(data);
+
+        }
 
 
     }
-
-
-
-
-
 }
