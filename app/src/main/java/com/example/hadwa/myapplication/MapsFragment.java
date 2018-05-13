@@ -699,6 +699,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
     @Override
     public boolean onMarkerClick(Marker marker) {
 
+
+
         //Log.d("markercb", "ana geet hena");
         if (appState == "initialState") {
             if (!Markers.contains(marker.getTitle())) {
@@ -788,19 +790,37 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         MySingleton.getInstance(getActivity()).addToRequestQueue(jsonArrayRequest);
 
     }
+    public static String getGucPlaceByLatLng(LatLng latLng){
+        for(Object place : MapsFragment.pinLocations.keySet()){
+            if(MapsFragment.pinLocations.get(place).equals(latLng)){
+                    Log.d("mo7eyy",place.toString());
+                return (String) place;
+
+            }
+
+
+        }
+        return null;
+
+    }
     // TODO: Get pickup location from server, and send to car
     // TODO: Send to server a POST request when I reach pickup location
     private void getTripFromServer() {
+        //Markers.clear();
         String tripUrl = "https://sdc-trip-car-management.herokuapp.com/car/find/car2";
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Method.GET, tripUrl, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                //Log.d("testtest", response.toString());
                 JSONObject obj = response;
                 Car car = gson.fromJson(obj.toString(), Car.class);
                 if(car.getCurrentTrip()!=null){
                     Trip trip = car.getCurrentTrip();
-                    
+
+                    for(int i =0; i<trip.getDestinations().size(); i++){
+                        TripDestination d= trip.getDestinations().get(i);
+                        Markers.add(getGucPlaceByLatLng(d.getLocation()));
+                    }
+
                 }
 
             }
@@ -816,6 +836,14 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         MySingleton.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
     }
 
+    public Marker LatLngToMarker(){
+
+        return null;
+    }
+
+
+
+
     public void createTrip(){
         String createTripUrl = "https://sdc-trip-car-management.herokuapp.com/trip/create";
         if(mLastLocation!=null) {
@@ -823,8 +851,18 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
             requestTrip.setPickupLocation(mLastLocation);
         }
         ArrayList<LatLng> destinationList = new ArrayList<LatLng>();
+
+        //added
+        // msh el mfrood lama ywsal kaman a clear kol l lists dih wala eh
+        Markers.clear();
+        //end
+
         for(int i =0; i<chosenMarkerArrayList.size(); i++){
             destinationList.add(chosenMarkerArrayList.get(i).getPosition());
+
+            //added
+            Markers.add(chosenMarkerArrayList.get(i).getTitle());
+            //end
         }
         requestTrip.setDestinations(destinationList);
         requestTrip.setCarID("car2");
