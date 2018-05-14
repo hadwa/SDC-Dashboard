@@ -1,5 +1,6 @@
 package com.example.hadwa.myapplication;
 
+
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
@@ -157,6 +158,17 @@ public class Trip {
         }
         trip.setDestinations(destinations);
         return trip;
+    }
+
+    public static RequestTrip toRequestTrip(Trip trip){
+        RequestTrip requestTrip = new RequestTrip();
+        requestTrip.setPickupLocation(trip.getPickupLocation());
+        List<LatLng> destinations = new ArrayList<>();
+        for(TripDestination tripDestination : trip.getDestinations()){
+            destinations.add(tripDestination.getLocation());
+        }
+        requestTrip.setDestinations(destinations);
+        return requestTrip;
     }
 
     public String getEvent() {

@@ -137,7 +137,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
     private static ArrayList<Polyline> polylines;
     private static Gson gson;
     boolean markersRequested = false;
-
+    static String tripState;
 
     public MapsFragment() {
         // Required empty public constructor
@@ -159,6 +159,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
         //NewText = (TextView)findViewById(R.id.WhichStop);
 
+        tripState = "localTrip";
         requestTrip = new RequestTrip();
         createdTrip = new Trip();
 
@@ -225,11 +226,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
                     getTripFromServer();
                     break;
                 case "CANCEL":
+                    onCancel();
                     break;
                 case "END":
                     break;
                 case "START":
-                    startTripFromServer();
+                    //startTripFromServer();
                     break;
                 case "MODIFY":
                     break;
@@ -414,11 +416,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         Button Start = (Button) getActivity().findViewById(R.id.start);
         Start.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+
                 if (mLastLocation != null) {
                     CheckInternet();
                     if (isInternetAvailable()) {
                         if (isGpsAvailable(getContext())) {
-                            if (Markers.size() > 0) {
+                                if (Markers.size() > 0) {
 //                        if(appState.equals("routeReady")) {
 //                            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
 //                                @Override
@@ -427,71 +430,114 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
 //                                }
 //                            });
 //                        }
-                                appState = "routeReady";
-                                GetRoutToMarker(pinLocations.get(Markers.get(0)));
-                                bottomSheet = (LinearLayout) getActivity().findViewById(R.id.BottomSheet_layout);
-                                bottomSheet2 = (LinearLayout) getActivity().findViewById(R.id.BottomSheet_layout2);
+                                    if(tripState == "remoteTrip"){
+                                        List<TripDestination> newDestinations = new ArrayList<>();
 
-                                TextView dest1 = (TextView) getActivity().findViewById(R.id.dest1);
-                                TextView dest2 = (TextView) getActivity().findViewById(R.id.dest2);
-                                TextView dest3 = (TextView) getActivity().findViewById(R.id.dest3);
-                                TextView dest4 = (TextView) getActivity().findViewById(R.id.dest4);
+                                        for(int i =0; i<Markers.size(); i++){
 
-                                ImageView destIcon1 = (ImageView) getActivity().findViewById(R.id.dest_icon1);
-                                ImageView destIcon2 = (ImageView) getActivity().findViewById(R.id.dest_icon2);
-                                ImageView destIcon3 = (ImageView) getActivity().findViewById(R.id.dest_icon3);
+                                            newDestinations.add(new TripDestination(pinLocations.get(Markers.get(i))));
 
-                                dest1.setVisibility(View.GONE);
-                                dest2.setVisibility(View.GONE);
-                                dest3.setVisibility(View.GONE);
-                                dest4.setVisibility(View.GONE);
-                                destIcon1.setVisibility(View.GONE);
-                                destIcon2.setVisibility(View.GONE);
-                                destIcon3.setVisibility(View.GONE);
+                                        }
 
-                                if (Markers.size() == 1) {
-                                    dest1.setText(Markers.get(0));
-                                    dest1.setVisibility(View.VISIBLE);
+
+                                        Trip modifiedTrip = new Trip();
+                                        modifiedTrip.setDestinations(newDestinations);
+                                        String url = "https://sdc-trip-car-management.herokuapp.com/car/trip/change/tablet";
+                                        String str = gson.toJson(modifiedTrip);
+                                        JSONObject trip = new JSONObject();
+                                        try {
+                                            trip = new JSONObject(str);
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+                                        JsonObjectRequest tripRequest = new JsonObjectRequest
+                                                (Request.Method.POST, url, trip, new Response.Listener<JSONObject>() {
+
+                                                    @Override
+                                                    public void onResponse(JSONObject response) {
+                                                        Log.v("EDITDESTINATION", response.toString());
+                                                        Trip tripp = gson.fromJson(response.toString(), Trip.class);
+
+
+
+                                                    }
+                                                }, new Response.ErrorListener() {
+
+                                                    @Override
+                                                    public void onErrorResponse(VolleyError error) {
+
+                                                    }
+                                                });
+
+                                        MySingleton.getInstance(getContext()).addToRequestQueue(tripRequest);
+
+                                    }
+                                    appState = "routeReady";
+                                    GetRoutToMarker(pinLocations.get(Markers.get(0)));
+                                    bottomSheet = (LinearLayout) getActivity().findViewById(R.id.BottomSheet_layout);
+                                    bottomSheet2 = (LinearLayout) getActivity().findViewById(R.id.BottomSheet_layout2);
+
+                                    TextView dest1 = (TextView) getActivity().findViewById(R.id.dest1);
+                                    TextView dest2 = (TextView) getActivity().findViewById(R.id.dest2);
+                                    TextView dest3 = (TextView) getActivity().findViewById(R.id.dest3);
+                                    TextView dest4 = (TextView) getActivity().findViewById(R.id.dest4);
+
+                                    ImageView destIcon1 = (ImageView) getActivity().findViewById(R.id.dest_icon1);
+                                    ImageView destIcon2 = (ImageView) getActivity().findViewById(R.id.dest_icon2);
+                                    ImageView destIcon3 = (ImageView) getActivity().findViewById(R.id.dest_icon3);
+
+                                    dest1.setVisibility(View.GONE);
+                                    dest2.setVisibility(View.GONE);
+                                    dest3.setVisibility(View.GONE);
+                                    dest4.setVisibility(View.GONE);
+                                    destIcon1.setVisibility(View.GONE);
+                                    destIcon2.setVisibility(View.GONE);
+                                    destIcon3.setVisibility(View.GONE);
+
+                                    if (Markers.size() == 1) {
+                                        dest1.setText(Markers.get(0));
+                                        dest1.setVisibility(View.VISIBLE);
+                                    }
+                                    if (Markers.size() == 2) {
+                                        dest1.setText(Markers.get(0));
+                                        dest2.setText(Markers.get(1));
+                                        dest1.setVisibility(View.VISIBLE);
+                                        dest2.setVisibility(View.VISIBLE);
+                                        destIcon1.setVisibility(View.VISIBLE);
+                                    }
+                                    if (Markers.size() == 3) {
+                                        dest1.setText(Markers.get(0));
+                                        dest2.setText(Markers.get(1));
+                                        dest3.setText(Markers.get(2));
+                                        dest1.setVisibility(View.VISIBLE);
+                                        dest2.setVisibility(View.VISIBLE);
+                                        dest3.setVisibility(View.VISIBLE);
+                                        destIcon1.setVisibility(View.VISIBLE);
+                                        destIcon2.setVisibility(View.VISIBLE);
+                                    }
+                                    if (Markers.size() == 4) {
+                                        dest1.setText(Markers.get(0));
+                                        dest2.setText(Markers.get(1));
+                                        dest3.setText(Markers.get(2));
+                                        dest4.setText(Markers.get(3));
+                                        dest1.setVisibility(View.VISIBLE);
+                                        dest2.setVisibility(View.VISIBLE);
+                                        dest3.setVisibility(View.VISIBLE);
+                                        dest4.setVisibility(View.VISIBLE);
+                                        destIcon1.setVisibility(View.VISIBLE);
+                                        destIcon2.setVisibility(View.VISIBLE);
+                                        destIcon3.setVisibility(View.VISIBLE);
+                                    }
+
+
+                                    bottomSheet.setVisibility(View.GONE);
+                                    bottomSheet2.setVisibility(View.VISIBLE);
+
+
+                                } else {
+                                    Toast.makeText(getContext(), "Please choose a destination", Toast.LENGTH_SHORT).show();
                                 }
-                                if (Markers.size() == 2) {
-                                    dest1.setText(Markers.get(0));
-                                    dest2.setText(Markers.get(1));
-                                    dest1.setVisibility(View.VISIBLE);
-                                    dest2.setVisibility(View.VISIBLE);
-                                    destIcon1.setVisibility(View.VISIBLE);
-                                }
-                                if (Markers.size() == 3) {
-                                    dest1.setText(Markers.get(0));
-                                    dest2.setText(Markers.get(1));
-                                    dest3.setText(Markers.get(2));
-                                    dest1.setVisibility(View.VISIBLE);
-                                    dest2.setVisibility(View.VISIBLE);
-                                    dest3.setVisibility(View.VISIBLE);
-                                    destIcon1.setVisibility(View.VISIBLE);
-                                    destIcon2.setVisibility(View.VISIBLE);
-                                }
-                                if (Markers.size() == 4) {
-                                    dest1.setText(Markers.get(0));
-                                    dest2.setText(Markers.get(1));
-                                    dest3.setText(Markers.get(2));
-                                    dest4.setText(Markers.get(3));
-                                    dest1.setVisibility(View.VISIBLE);
-                                    dest2.setVisibility(View.VISIBLE);
-                                    dest3.setVisibility(View.VISIBLE);
-                                    dest4.setVisibility(View.VISIBLE);
-                                    destIcon1.setVisibility(View.VISIBLE);
-                                    destIcon2.setVisibility(View.VISIBLE);
-                                    destIcon3.setVisibility(View.VISIBLE);
-                                }
 
-
-                                bottomSheet.setVisibility(View.GONE);
-                                bottomSheet2.setVisibility(View.VISIBLE);
-
-
-                            } else {
-                                Toast.makeText(getContext(), "Please choose a destination", Toast.LENGTH_SHORT).show();
-                            }
                         }
 
 
@@ -509,7 +555,16 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         confirmRide.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                createTrip();
+                if(tripState == "localTrip") {
+                    createTrip();
+                }else{
+                Intent visualizationIntent = new Intent(getActivity(), VisualizationActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putParcelable("destination", pinLocations.get(Markers.get(0)));
+                visualizationIntent.putExtra("bundle", bundle);
+                startActivity(visualizationIntent);
+                getActivity().getSupportFragmentManager().beginTransaction().remove(MapsFragment.this);
+                }
 //                Intent visualizationIntent = new Intent(getActivity(), VisualizationActivity.class);
 //                Bundle bundle = new Bundle();
 //                bundle.putParcelable("destination", pinLocations.get(Markers.get(0)));
@@ -806,7 +861,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
     // TODO: Get pickup location from server, and send to car
     // TODO: Send to server a POST request when I reach pickup location
     private void getTripFromServer() {
-        //Markers.clear();
+
+        //TODO:Clear markers when I finish a trip.
+        Markers.clear();
+        tripState = "remoteState";
         String tripUrl = "https://sdc-trip-car-management.herokuapp.com/car/find/car2";
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Method.GET, tripUrl, null, new Response.Listener<JSONObject>() {
             @Override
@@ -819,6 +877,95 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
                     for(int i =0; i<trip.getDestinations().size(); i++){
                         TripDestination d= trip.getDestinations().get(i);
                         Markers.add(getGucPlaceByLatLng(d.getLocation()));
+                    }
+
+                    if (mLastLocation != null) {
+                        CheckInternet();
+                        if (isInternetAvailable()) {
+                            if (isGpsAvailable(getContext())) {
+                                if (Markers.size() > 0) {
+//                        if(appState.equals("routeReady")) {
+//                            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+//                                @Override
+//                                public boolean onMarkerClick(Marker marker) {
+//                                    return true;
+//                                }
+//                            });
+//                        }
+                                    appState = "routeReady";
+                                    GetRoutToMarker(pinLocations.get(Markers.get(0)));
+                                    bottomSheet = (LinearLayout) getActivity().findViewById(R.id.BottomSheet_layout);
+                                    bottomSheet2 = (LinearLayout) getActivity().findViewById(R.id.BottomSheet_layout2);
+
+                                    TextView dest1 = (TextView) getActivity().findViewById(R.id.dest1);
+                                    TextView dest2 = (TextView) getActivity().findViewById(R.id.dest2);
+                                    TextView dest3 = (TextView) getActivity().findViewById(R.id.dest3);
+                                    TextView dest4 = (TextView) getActivity().findViewById(R.id.dest4);
+
+                                    ImageView destIcon1 = (ImageView) getActivity().findViewById(R.id.dest_icon1);
+                                    ImageView destIcon2 = (ImageView) getActivity().findViewById(R.id.dest_icon2);
+                                    ImageView destIcon3 = (ImageView) getActivity().findViewById(R.id.dest_icon3);
+
+                                    dest1.setVisibility(View.GONE);
+                                    dest2.setVisibility(View.GONE);
+                                    dest3.setVisibility(View.GONE);
+                                    dest4.setVisibility(View.GONE);
+                                    destIcon1.setVisibility(View.GONE);
+                                    destIcon2.setVisibility(View.GONE);
+                                    destIcon3.setVisibility(View.GONE);
+
+                                    if (Markers.size() == 1) {
+                                        dest1.setText(Markers.get(0));
+                                        dest1.setVisibility(View.VISIBLE);
+                                    }
+                                    if (Markers.size() == 2) {
+                                        dest1.setText(Markers.get(0));
+                                        dest2.setText(Markers.get(1));
+                                        dest1.setVisibility(View.VISIBLE);
+                                        dest2.setVisibility(View.VISIBLE);
+                                        destIcon1.setVisibility(View.VISIBLE);
+                                    }
+                                    if (Markers.size() == 3) {
+                                        dest1.setText(Markers.get(0));
+                                        dest2.setText(Markers.get(1));
+                                        dest3.setText(Markers.get(2));
+                                        dest1.setVisibility(View.VISIBLE);
+                                        dest2.setVisibility(View.VISIBLE);
+                                        dest3.setVisibility(View.VISIBLE);
+                                        destIcon1.setVisibility(View.VISIBLE);
+                                        destIcon2.setVisibility(View.VISIBLE);
+                                    }
+                                    if (Markers.size() == 4) {
+                                        dest1.setText(Markers.get(0));
+                                        dest2.setText(Markers.get(1));
+                                        dest3.setText(Markers.get(2));
+                                        dest4.setText(Markers.get(3));
+                                        dest1.setVisibility(View.VISIBLE);
+                                        dest2.setVisibility(View.VISIBLE);
+                                        dest3.setVisibility(View.VISIBLE);
+                                        dest4.setVisibility(View.VISIBLE);
+                                        destIcon1.setVisibility(View.VISIBLE);
+                                        destIcon2.setVisibility(View.VISIBLE);
+                                        destIcon3.setVisibility(View.VISIBLE);
+                                    }
+
+
+                                    bottomSheet.setVisibility(View.GONE);
+                                    bottomSheet2.setVisibility(View.VISIBLE);
+
+
+                                } else {
+                                    Toast.makeText(getContext(), "Please choose a destination", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+
+
+                        }
+                    }else{
+                        createLocationRequest();
+                        startLocationUpdates();
+                        CheckGPS();
+                        //Toast.makeText(getContext(), "Location service failed..", Toast.LENGTH_SHORT).show();
                     }
 
                 }
@@ -852,17 +999,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         }
         ArrayList<LatLng> destinationList = new ArrayList<LatLng>();
 
-        //added
-        // msh el mfrood lama ywsal kaman a clear kol l lists dih wala eh
-        Markers.clear();
-        //end
+
 
         for(int i =0; i<chosenMarkerArrayList.size(); i++){
             destinationList.add(chosenMarkerArrayList.get(i).getPosition());
 
-            //added
-            Markers.add(chosenMarkerArrayList.get(i).getTitle());
-            //end
+
         }
         requestTrip.setDestinations(destinationList);
         requestTrip.setCarID("car2");
@@ -880,7 +1022,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
             @Override
             public void onResponse(JSONObject response) {
                 createdTrip = gson.fromJson(response.toString(),Trip.class);
-                Log.d("yahbaaal", createdTrip.getId().toString());
+                Log.d("yahbaaal", createdTrip.getId());
                 Intent visualizationIntent = new Intent(getActivity(), VisualizationActivity.class);
                 Bundle bundle = new Bundle();
                 bundle.putParcelable("destination", pinLocations.get(Markers.get(0)));
@@ -907,6 +1049,18 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         //visualizationIntent.putExtra("destination", pinLocations.get(Markers.get(0)));
         startActivity(visualizationIntent);
         getActivity().getSupportFragmentManager().beginTransaction().remove(MapsFragment.this);
+    }
+    public void onCancel(){
+        Markers.clear();
+        appState = "initialState";
+        removePolylines();
+        bottomSheet.setVisibility(View.VISIBLE);
+        bottomSheet2.setVisibility(View.GONE);
+
+
+
+
+
     }
 
 

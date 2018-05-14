@@ -39,6 +39,7 @@ public class MapsActivity extends AppCompatActivity{
             MapsFragment.bottomSheet.setVisibility(View.VISIBLE);
             MapsFragment.bottomSheet2.setVisibility(View.GONE);
         }
+
     }
 
 
