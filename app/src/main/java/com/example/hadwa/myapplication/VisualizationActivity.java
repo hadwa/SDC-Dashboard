@@ -3,7 +3,10 @@ package com.example.hadwa.myapplication;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Fragment;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Color;
@@ -13,17 +16,23 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 
 import com.akexorcist.googledirection.DirectionCallback;
 import com.akexorcist.googledirection.GoogleDirection;
 import com.akexorcist.googledirection.constant.TransportMode;
 import com.akexorcist.googledirection.model.Direction;
 import com.akexorcist.googledirection.model.Route;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.github.anastr.speedviewlib.SpeedView;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -39,6 +48,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -56,12 +69,16 @@ public class VisualizationActivity extends AppCompatActivity implements OnMapRea
     private ArrayList<Polyline> polylines;
     private LatLng loc;
     KdGaugeView speedoMeterView;
+    private LocalBroadcastManager broadcaster;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_visualization);
         getSupportActionBar().hide();
+        broadcaster = LocalBroadcastManager.getInstance(this);
+
         //MapsFragment MapsFragment1 = new MapsFragment();
         //Fragment MapsFragment1 = getFragmentManager().findFragmentById(R.id.mapFragment);
 //        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container_2, MapsFragment, "").commit();
@@ -86,6 +103,18 @@ public class VisualizationActivity extends AppCompatActivity implements OnMapRea
         //MapFragment mGoogleMap = (MapFragment) getFragmentManager() .findFragmentById(R.id.map);
         mGoogleMap.getMapAsync(this);
 
+        Button endButton = findViewById(R.id.endButton);
+        endButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onEndButton();
+            }
+        });
+
+
+        LocalBroadcastManager.getInstance(this).registerReceiver((mMessageReceiver),
+                new IntentFilter("FcmData")
+        );
 //        SpeedView speedometer = findViewById(R.id.speedView);
 //        View bottomSheet=findViewById(R.id.BottomSheet_layout);
 //        bottomSheet.setVisibility(View.GONE);
@@ -209,6 +238,72 @@ public class VisualizationActivity extends AppCompatActivity implements OnMapRea
         mLocationRequest.setFastestInterval(5000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
+
+
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundle = intent.getExtras();
+            String status = bundle.getString("EVENT");
+            String carID = bundle.getString("CAR_ID");
+            String tripID=bundle.getString("TRIP_ID");
+            //Log.d("eh ya status da?", status);
+            switch (status) {
+
+                case "NEW":
+                   // getTripFromServer();
+                    break;
+                case "CANCEL":
+                    //onCancel();
+                    break;
+                case "END":
+                    break;
+                case "START":
+                    //startTripFromServer();
+                    break;
+                case "MODIFY":
+                    break;
+
+            }
+        }
+    };
+    public void onEndButton(){
+        Intent intent = new Intent("onEnd");
+        intent.putExtra("EVENT", "ResetAll");
+        broadcaster.sendBroadcast(intent);
+        this.finish();
+        String cancelUrl = "https://sdc-trip-car-management.herokuapp.com/car/trip/end/tablet/car2";
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest
+                (Request.Method.GET, cancelUrl, null, new Response.Listener<JSONArray>() {
+
+                    @Override
+                    public void onResponse(JSONArray response) {
+
+                        for (int i = 0; i < response.length(); i++) {
+                            try {
+                                JSONObject responseObject = response.getJSONObject(i);
+
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                    }
+                });
+
+         //Access the RequestQueue through your singleton class.
+        MySingleton.getInstance(this).addToRequestQueue(jsonArrayRequest);
+
+    }
+
 
 
 }

@@ -125,7 +125,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
 
     Trip createdTrip;
     static ImageView markerView;
-    private TextView BottomSheetText;
+    static TextView BottomSheetText;
     private View view;
     static List<String> Markers;
     RecyclerView recyclerView;
@@ -201,6 +201,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         LocalBroadcastManager.getInstance(this.getActivity()).registerReceiver((mMessageReceiver),
                 new IntentFilter("FcmData")
         );
+        LocalBroadcastManager.getInstance(this.getActivity()).registerReceiver((mMessageReceiver2),
+                new IntentFilter("onEnd")
+        );
         return view;
 
     }
@@ -220,6 +223,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
             String status = bundle.getString("EVENT");
             String carID = bundle.getString("CAR_ID");
             String tripID=bundle.getString("TRIP_ID");
+            Log.d("eh ya status da?", status);
             switch (status) {
 
                 case "NEW":
@@ -237,11 +241,36 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
                     break;
 
             }
-//            if(status != null && status.length()>0 ){
-//
-//            }
-            //Log.d("yahbaaal", "ana geeh hena");
         }
+    };
+
+    private BroadcastReceiver mMessageReceiver2 = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundle = intent.getExtras();
+            String status = bundle.getString("EVENT");
+            if(status=="ResetAll") {
+
+                Markers.clear();
+                DestinationCount=0;
+
+                for (int i=0 ;i<chosenMarkerArrayList.size();i++) {
+                    markerView.setImageResource(R.drawable.ic_marker_black);
+                    markerText.setText(MapsFragment.chosenMarkerArrayList.get(i).getTitle());
+                    chosenMarkerArrayList.get(i).setIcon(BitmapDescriptorFactory.fromBitmap(createDrawableFromView(MapsFragment.markerIcon.getContext(), markerIcon)));
+                    chosenMarkerArrayList.remove(i);
+                }
+                BottomSheetText.setText("Pick a drop-off location");
+                BottomSheetText.setAlpha((float) 0.54);
+                //notifyItemRemoved(holder.getAdapterPosition());
+                appState = "initialState";
+                removePolylines();
+                bottomSheet.setVisibility(View.VISIBLE);
+                bottomSheet2.setVisibility(View.GONE);
+            }
+            }
+
+
     };
     @Override
     public void onResume() {
@@ -1057,11 +1086,38 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
         bottomSheet.setVisibility(View.VISIBLE);
         bottomSheet2.setVisibility(View.GONE);
 
+//        String cancelUrl = "https://sdc-trip-car-management.herokuapp.com/car/trip/cancel/tablet/car2";
+//        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest
+//                (Method.GET, cancelUrl, null, new Response.Listener<JSONArray>() {
+//
+//                    @Override
+//                    public void onResponse(JSONArray response) {
+//
+//                        for (int i = 0; i < response.length(); i++) {
+//                            try {
+//                                JSONObject responseObject = response.getJSONObject(i);
+//
+//
+//                            } catch (JSONException e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+//
+//
+//                    }
+//                }, new Response.ErrorListener() {
+//
+//                    @Override
+//                    public void onErrorResponse(VolleyError error) {
+//
+//                    }
+//                });
 
-
-
+        // Access the RequestQueue through your singleton class.
+//        MySingleton.getInstance(getActivity()).addToRequestQueue(jsonArrayRequest);
 
     }
+
 
 
     }

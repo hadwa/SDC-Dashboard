@@ -104,5 +104,17 @@
         app:unitOfMeasurementTextColor="@color/colorPrimary"
         app:unitOfMeasurementTextSize="25dp" />
 
+    <Button
+        android:id="@+id/endButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="48dp"
+        android:layout_marginEnd="59dp"
+        android:background="#02B3E4"
+        android:text="END RIDE"
+        android:textColor="@color/colorPrimary" />
+
 
 </RelativeLayout>

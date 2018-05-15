@@ -54,6 +54,13 @@ public class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerListAdapte
                     MapsFragment.markerText.setText(MapsFragment.chosenMarkerArrayList.get(holder.getAdapterPosition()).getTitle());
                     MapsFragment.chosenMarkerArrayList.get(holder.getAdapterPosition()).setIcon(BitmapDescriptorFactory.fromBitmap(createDrawableFromView(MapsFragment.markerIcon.getContext(), markerIcon)));
                     chosenMarkerArrayList.remove(holder.getAdapterPosition());
+                    if(MapsFragment.DestinationCount == 0) {
+                        MapsFragment.BottomSheetText.setText("Pick a drop-off location");
+                        MapsFragment.BottomSheetText.setAlpha((float) 0.54);
+                    }else {
+                        MapsFragment.BottomSheetText.setText(chosenMarkerArrayList.get(chosenMarkerArrayList.size()-1).getTitle());
+                        MapsFragment.BottomSheetText.setAlpha((float) 0.87);
+                    }
                     notifyItemRemoved(holder.getAdapterPosition());
                 }
             });
