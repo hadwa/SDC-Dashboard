@@ -43,6 +43,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.2'
     implementation 'com.github.anastr:speedviewlib:1.2.0'
     implementation 'in.unicodelabs.sorbh:kdgaugeview:1.0.0'
+
 }
 
 apply plugin: 'com.google.gms.google-services'

@@ -268,6 +268,7 @@ public class VisualizationActivity extends AppCompatActivity implements OnMapRea
         }
     };
     public void onEndButton(){
+        MapsFragment.confirmRide.setClickable(true);
         Intent intent = new Intent("onEnd");
         intent.putExtra("EVENT", "ResetAll");
         broadcaster.sendBroadcast(intent);
@@ -304,6 +305,9 @@ public class VisualizationActivity extends AppCompatActivity implements OnMapRea
 
     }
 
-
-
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        MapsFragment.confirmRide.setClickable(true);
+    }
 }

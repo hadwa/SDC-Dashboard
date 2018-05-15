@@ -138,6 +138,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
     private static Gson gson;
     boolean markersRequested = false;
     static String tripState;
+    static Button confirmRide;
 
     public MapsFragment() {
         // Required empty public constructor
@@ -580,10 +581,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, View.O
             }
         });
 
-        Button confirmRide = (Button) getActivity().findViewById(R.id.confirm_ride);
+        confirmRide = (Button) getActivity().findViewById(R.id.confirm_ride);
         confirmRide.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                confirmRide.setClickable(false);
                 if(tripState == "localTrip") {
                     createTrip();
                 }else{
